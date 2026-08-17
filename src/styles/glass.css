@@ -300,7 +300,7 @@ body, html {
   box-shadow: 0 0 14px rgba(10, 132, 255, 0.35);
 }
 
-/* Keyframe Animations with iOS Spring Curves */
+/* Keyframe Animations with Silky iOS Spring Curves */
 @keyframes iosDrawerSlideIn {
   from {
     transform: translateX(-100%);
@@ -313,13 +313,13 @@ body, html {
 }
 
 .animate-ios-drawer {
-  animation: iosDrawerSlideIn 0.34s var(--ios-spring) forwards;
+  animation: iosDrawerSlideIn 0.32s var(--ios-spring) forwards;
 }
 
 @keyframes iosSpringIn {
   0% {
     opacity: 0;
-    transform: scale(0.95) translateY(4px);
+    transform: scale(0.96) translateY(4px);
   }
   100% {
     opacity: 1;
@@ -328,7 +328,22 @@ body, html {
 }
 
 .animate-ios-spring {
-  animation: iosSpringIn 0.26s var(--ios-spring) forwards;
+  animation: iosSpringIn 0.24s var(--ios-spring) forwards;
+}
+
+@keyframes chapterFadeIn {
+  0% {
+    opacity: 0.35;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-chapter-fade {
+  animation: chapterFadeIn 0.28s var(--ios-spring) forwards;
 }
 
 /* Custom Sleek Scrollbar */

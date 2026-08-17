@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -44,6 +44,16 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
   onToggleAutoScroll,
   onOpenShortcuts
 }) => {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isNarrowScreen = windowWidth < 600;
+
   return (
     <div
       style={{
@@ -64,158 +74,179 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
         style={{
           pointerEvents: 'auto',
           display: 'flex',
+          flexDirection: isNarrowScreen ? 'column' : 'row',
           alignItems: 'center',
-          gap: 'clamp(3px, 1vw, 7px)',
-          padding: '4px clamp(6px, 1.2vw, 12px)',
-          maxWidth: '100%',
-          overflowX: 'auto',
-          scrollbarWidth: 'none',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.28)'
+          gap: isNarrowScreen ? '6px' : 'clamp(3px, 1vw, 7px)',
+          padding: isNarrowScreen ? '8px 12px' : '5px clamp(6px, 1.2vw, 12px)',
+          maxWidth: 'calc(100vw - 16px)',
+          borderRadius: isNarrowScreen ? '20px' : '9999px',
+          boxShadow: '0 12px 36px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s cubic-bezier(0.2, 0.9, 0.1, 1)'
         }}
       >
-        {/* Previous Chapter */}
-        <button
-          onClick={onPrevChapter}
-          disabled={currentChapterIndex <= 0}
-          className="frosted-btn"
-          style={{ padding: '4px 8px', borderRadius: '9999px', flexShrink: 0 }}
-          title="上一章 ([ 或 ←)"
-        >
-          <ChevronLeft size={13} />
-          <span style={{ fontSize: '11px' }}>上一章</span>
-        </button>
-
-        {/* Chapter Slider & Progress Indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
-          <input
-            type="range"
-            min="0"
-            max={Math.max(0, totalChapters - 1)}
-            value={currentChapterIndex}
-            onChange={(e) => onJumpChapter(Number(e.target.value))}
-            style={{ width: 'clamp(40px, 8vw, 85px)', accentColor: 'var(--accent-color)', cursor: 'pointer' }}
-          />
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', minWidth: '36px', textAlign: 'right' }}>
-            {currentChapterIndex + 1}/{totalChapters}
-          </span>
-        </div>
-
-        {/* Next Chapter */}
-        <button
-          onClick={onNextChapter}
-          disabled={currentChapterIndex >= totalChapters - 1}
-          className="frosted-btn"
-          style={{ padding: '4px 8px', borderRadius: '9999px', flexShrink: 0 }}
-          title="下一章 (] 或 →)"
-        >
-          <span style={{ fontSize: '11px' }}>下一章</span>
-          <ChevronRight size={13} />
-        </button>
-
-        {/* Separator */}
-        <div style={{ width: '1px', height: '14px', background: 'var(--glass-border)', flexShrink: 0 }} />
-
-        {/* Auto Scroll Toggle */}
-        <button
-          onClick={onToggleAutoScroll}
-          className="frosted-btn"
-          style={{
-            padding: '4px 8px',
-            borderRadius: '9999px',
-            background: isAutoScrolling ? 'var(--accent-color)' : 'transparent',
-            color: isAutoScrolling ? '#ffffff' : 'var(--text-primary)',
-            boxShadow: isAutoScrolling ? 'var(--accent-glow)' : 'none',
-            flexShrink: 0
-          }}
-          title="自动滚屏阅读 (快捷键: 空格 Space)"
-        >
-          {isAutoScrolling ? <Pause size={12} /> : <Play size={12} />}
-          <span style={{ fontSize: '11px' }}>{isAutoScrolling ? '滚屏中' : '自动滚屏'}</span>
-        </button>
-
-        {/* Font Size Quick Toggles */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
+        {/* Row 1: Chapter Slider & Prev / Next */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', width: isNarrowScreen ? '100%' : 'auto', justifyContent: 'center' }}>
           <button
-            onClick={() =>
-              onUpdateTheme({ ...themeConfig, fontSize: Math.max(11, themeConfig.fontSize - 1) })
-            }
+            onClick={onPrevChapter}
+            disabled={currentChapterIndex <= 0}
             className="frosted-btn"
-            style={{ padding: '3px 6px', fontSize: '11px', borderRadius: '9999px' }}
-            title="缩小字号 (A-)"
+            style={{ padding: '4px 8px', borderRadius: '9999px', flexShrink: 0 }}
+            title="上一章 ([ 或 ←)"
           >
-            A-
+            <ChevronLeft size={13} />
+            <span style={{ fontSize: '11px' }}>上一章</span>
           </button>
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', minWidth: '18px', textAlign: 'center' }}>
-            {themeConfig.fontSize}
-          </span>
+
+          {/* Chapter Slider & Progress */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: isNarrowScreen ? 1 : 'none' }}>
+            <input
+              type="range"
+              min="0"
+              max={Math.max(0, totalChapters - 1)}
+              value={currentChapterIndex}
+              onChange={(e) => onJumpChapter(Number(e.target.value))}
+              style={{
+                width: isNarrowScreen ? '100%' : 'clamp(40px, 8vw, 85px)',
+                accentColor: 'var(--accent-color)',
+                cursor: 'pointer'
+              }}
+            />
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', minWidth: '38px', textAlign: 'right' }}>
+              {currentChapterIndex + 1}/{totalChapters}
+            </span>
+          </div>
+
           <button
-            onClick={() =>
-              onUpdateTheme({ ...themeConfig, fontSize: Math.min(36, themeConfig.fontSize + 1) })
-            }
+            onClick={onNextChapter}
+            disabled={currentChapterIndex >= totalChapters - 1}
             className="frosted-btn"
-            style={{ padding: '3px 6px', fontSize: '11px', borderRadius: '9999px' }}
-            title="放大字号 (A+)"
+            style={{ padding: '4px 8px', borderRadius: '9999px', flexShrink: 0 }}
+            title="下一章 (] 或 →)"
           >
-            A+
+            <span style={{ fontSize: '11px' }}>下一章</span>
+            <ChevronRight size={13} />
           </button>
         </div>
 
-        {/* Chapter Word Count Badge */}
-        {wordCount > 0 && (
-          <span
-            style={{
-              fontSize: '11px',
-              color: 'var(--text-muted)',
-              padding: '2px 5px',
-              background: 'var(--glass-surface)',
-              borderRadius: '6px',
-              border: '1px solid var(--glass-border)',
-              flexShrink: 0
-            }}
-          >
-            {wordCount > 10000 ? `${(wordCount / 10000).toFixed(1)}万字` : `${wordCount}字`}
-          </span>
+        {/* Separator for Wide Screen */}
+        {!isNarrowScreen && (
+          <div style={{ width: '1px', height: '14px', background: 'var(--glass-border)', flexShrink: 0 }} />
         )}
 
-        {/* TTS Speech Trigger */}
-        <button
-          onClick={onToggleTTS}
-          className="frosted-btn"
+        {/* Row 2: Reading Actions (Auto-Scroll, Font Zoom, TTS, Theme, Help) */}
+        <div
           style={{
-            padding: '4px 6px',
-            borderRadius: '9999px',
-            color: isTTSPlaying ? 'var(--accent-color)' : 'var(--text-primary)',
-            flexShrink: 0
+            display: 'flex',
+            alignItems: 'center',
+            gap: isNarrowScreen ? '6px' : '4px',
+            width: isNarrowScreen ? '100%' : 'auto',
+            justifyContent: isNarrowScreen ? 'space-between' : 'flex-start',
+            paddingTop: isNarrowScreen ? '4px' : '0',
+            borderTop: isNarrowScreen ? '1px solid var(--glass-border)' : 'none'
           }}
-          title={isTTSPlaying ? '停止朗读' : '开启静默朗读听书'}
         >
-          {isTTSPlaying ? <VolumeX size={13} /> : <Volume2 size={13} />}
-        </button>
+          {/* Auto Scroll Toggle */}
+          <button
+            onClick={onToggleAutoScroll}
+            className="frosted-btn"
+            style={{
+              padding: '4px 8px',
+              borderRadius: '9999px',
+              background: isAutoScrolling ? 'var(--accent-color)' : 'transparent',
+              color: isAutoScrolling ? '#ffffff' : 'var(--text-primary)',
+              boxShadow: isAutoScrolling ? 'var(--accent-glow)' : 'none',
+              flexShrink: 0
+            }}
+            title="自动滚屏阅读 (快捷键: 空格 Space)"
+          >
+            {isAutoScrolling ? <Pause size={12} /> : <Play size={12} />}
+            <span style={{ fontSize: '11px' }}>{isAutoScrolling ? '滚屏中' : '自动滚屏'}</span>
+          </button>
 
-        {/* Quick Theme Toggle (Day / Dark) */}
-        <button
-          onClick={() =>
-            onUpdateTheme({
-              ...themeConfig,
-              themePreset: themeConfig.themePreset === 'dark-oled' ? 'day-glass' : 'dark-oled'
-            })
-          }
-          className="frosted-btn"
-          style={{ padding: '4px 6px', borderRadius: '9999px', flexShrink: 0 }}
-          title="切换深浅主题"
-        >
-          {themeConfig.themePreset === 'dark-oled' ? <Sun size={13} /> : <Moon size={13} />}
-        </button>
+          {/* Font Size Quick Toggles */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
+            <button
+              onClick={() =>
+                onUpdateTheme({ ...themeConfig, fontSize: Math.max(11, themeConfig.fontSize - 1) })
+              }
+              className="frosted-btn"
+              style={{ padding: '3px 6px', fontSize: '11px', borderRadius: '9999px' }}
+              title="缩小字号 (A-)"
+            >
+              A-
+            </button>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', minWidth: '18px', textAlign: 'center' }}>
+              {themeConfig.fontSize}
+            </span>
+            <button
+              onClick={() =>
+                onUpdateTheme({ ...themeConfig, fontSize: Math.min(36, themeConfig.fontSize + 1) })
+              }
+              className="frosted-btn"
+              style={{ padding: '3px 6px', fontSize: '11px', borderRadius: '9999px' }}
+              title="放大字号 (A+)"
+            >
+              A+
+            </button>
+          </div>
 
-        {/* Shortcuts Modal Guide Button */}
-        <button
-          onClick={onOpenShortcuts}
-          className="frosted-btn"
-          style={{ padding: '4px 6px', borderRadius: '9999px', color: 'var(--text-secondary)', flexShrink: 0 }}
-          title="快捷键指引 (?)"
-        >
-          <HelpCircle size={13} />
-        </button>
+          {/* Chapter Word Count Badge */}
+          {wordCount > 0 && !isNarrowScreen && (
+            <span
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+                padding: '2px 5px',
+                background: 'var(--glass-surface)',
+                borderRadius: '6px',
+                border: '1px solid var(--glass-border)',
+                flexShrink: 0
+              }}
+            >
+              {wordCount > 10000 ? `${(wordCount / 10000).toFixed(1)}万字` : `${wordCount}字`}
+            </span>
+          )}
+
+          {/* TTS Speech Trigger */}
+          <button
+            onClick={onToggleTTS}
+            className="frosted-btn"
+            style={{
+              padding: '4px 6px',
+              borderRadius: '9999px',
+              color: isTTSPlaying ? 'var(--accent-color)' : 'var(--text-primary)',
+              flexShrink: 0
+            }}
+            title={isTTSPlaying ? '停止朗读' : '开启静默朗读听书'}
+          >
+            {isTTSPlaying ? <VolumeX size={13} /> : <Volume2 size={13} />}
+          </button>
+
+          {/* Quick Theme Toggle (Day / Dark) */}
+          <button
+            onClick={() =>
+              onUpdateTheme({
+                ...themeConfig,
+                themePreset: themeConfig.themePreset === 'dark-oled' ? 'day-glass' : 'dark-oled'
+              })
+            }
+            className="frosted-btn"
+            style={{ padding: '4px 6px', borderRadius: '9999px', flexShrink: 0 }}
+            title="切换深浅主题"
+          >
+            {themeConfig.themePreset === 'dark-oled' ? <Sun size={13} /> : <Moon size={13} />}
+          </button>
+
+          {/* Shortcuts Modal Guide Button */}
+          <button
+            onClick={onOpenShortcuts}
+            className="frosted-btn"
+            style={{ padding: '4px 6px', borderRadius: '9999px', color: 'var(--text-secondary)', flexShrink: 0 }}
+            title="快捷键指引 (?)"
+          >
+            <HelpCircle size={13} />
+          </button>
+        </div>
       </div>
     </div>
   );

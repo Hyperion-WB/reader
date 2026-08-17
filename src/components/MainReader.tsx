@@ -352,7 +352,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
             <div style={{ fontSize: '13px' }}>正在为您加载章节内容...</div>
           </div>
         ) : (
-          <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+          <div key={currentChapter.index} className="animate-chapter-fade" style={{ maxWidth: '860px', margin: '0 auto' }}>
             {paragraphs.map((para, idx) => {
               if (searchQuery.trim().length > 0) {
                 const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');

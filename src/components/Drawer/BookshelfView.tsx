@@ -20,13 +20,13 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
   onOpenSearch
 }) => {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px', padding: '2px 0' }}>
       {/* Top Action Bar */}
-      <div style={{ display: 'flex', gap: '8px' }}>
+      <div style={{ display: 'flex', gap: '10px', padding: '4px 2px' }}>
         <button
           onClick={onImportLocal}
           className="frosted-btn frosted-btn-primary"
-          style={{ flex: 1, padding: '9px 12px', borderRadius: '12px' }}
+          style={{ flex: 1, padding: '9px 12px', borderRadius: '9999px', fontSize: '13px' }}
         >
           <Upload size={14} />
           <span>导入本地 (TXT / EPUB)</span>
@@ -34,7 +34,7 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
         <button
           onClick={onOpenSearch}
           className="frosted-btn"
-          style={{ flex: 1, padding: '9px 12px', borderRadius: '12px' }}
+          style={{ flex: 1, padding: '9px 12px', borderRadius: '9999px', fontSize: '13px' }}
         >
           <Plus size={14} />
           <span>全网搜书 / 导入书源</span>

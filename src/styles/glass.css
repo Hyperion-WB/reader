@@ -154,7 +154,7 @@
   justify-content: center;
   gap: 7px;
   padding: 7px 14px;
-  border-radius: 12px;
+  border-radius: 9999px;
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 500;
@@ -166,14 +166,14 @@
   user-select: none;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  transition: transform 0.2s var(--ios-spring), background 0.2s var(--ios-spring), border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: background 0.2s var(--ios-spring), border-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, transform 0.15s var(--ios-spring);
 }
 
 .frosted-btn:hover {
   background: var(--glass-surface-hover);
   border-color: var(--glass-border-hover);
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  filter: brightness(1.08);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 }
 
 .frosted-btn:active {
@@ -185,19 +185,18 @@
 .frosted-btn-primary {
   background: var(--accent-gradient) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
   box-shadow: var(--accent-glow) !important;
 }
 
 .frosted-btn-primary:hover {
-  filter: brightness(1.08);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45) !important;
-  transform: translateY(-1.5px) scale(1.02);
+  filter: brightness(1.12) !important;
+  box-shadow: 0 4px 18px rgba(37, 99, 235, 0.5) !important;
 }
 
 .frosted-btn-primary:active {
   transform: scale(0.96);
-  filter: brightness(0.95);
+  filter: brightness(0.95) !important;
 }
 
 /* iOS Segmented Pill Tab */

@@ -6,6 +6,7 @@ import { OnlineSearchView } from './Drawer/OnlineSearchView';
 import { SourceManagerView } from './Drawer/SourceManagerView';
 import { StyleStudioView } from './Drawer/StyleStudioView';
 import { StealthConsoleView } from './Drawer/StealthConsoleView';
+import { IOSSegmentedControl } from './IOSSegmentedControl';
 import {
   Library,
   ListTree,
@@ -115,46 +116,13 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
           </button>
         </div>
 
-        {/* Top Segmented Navigation Pills */}
-        <div
-          style={{
-            display: 'flex',
-            background: 'rgba(255, 255, 255, 0.08)',
-            padding: '3px',
-            borderRadius: '12px',
-            gap: '2px',
-            border: '1px solid rgba(255, 255, 255, 0.1)'
-          }}
-        >
-          {navItems.map((item) => {
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '4px',
-                  padding: '6px 0',
-                  borderRadius: '10px',
-                  border: 'none',
-                  background: isActive ? 'var(--accent-color)' : 'transparent',
-                  color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                  fontSize: '12px',
-                  fontWeight: isActive ? 600 : 400,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s var(--spring-smooth)'
-                }}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Top Segmented Navigation Control with iOS Fluid Sliding Pill */}
+        <IOSSegmentedControl<DrawerTab>
+          items={navItems}
+          activeId={activeTab}
+          onChange={setActiveTab}
+          height={38}
+        />
 
         {/* Drawer Tab Content */}
         <div style={{ flex: 1, overflow: 'hidden' }}>

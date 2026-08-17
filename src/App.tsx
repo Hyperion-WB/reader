@@ -475,7 +475,7 @@ export function App() {
                     }
                   }}
                   className="frosted-btn frosted-btn-primary"
-                  style={{ flex: 1, padding: '10px 16px', fontSize: '13.5px', borderRadius: '14px' }}
+                  style={{ flex: 1, padding: '11px 18px', fontSize: '13.5px', borderRadius: '9999px' }}
                 >
                   <Upload size={16} />
                   <span>导入本地 (TXT / EPUB)</span>
@@ -484,7 +484,7 @@ export function App() {
                 <button
                   onClick={() => setIsDrawerOpen(true)}
                   className="frosted-btn"
-                  style={{ flex: 1, padding: '10px 16px', fontSize: '13.5px', borderRadius: '14px' }}
+                  style={{ flex: 1, padding: '11px 18px', fontSize: '13.5px', borderRadius: '9999px' }}
                 >
                   <Plus size={16} />
                   <span>全网书源搜书</span>

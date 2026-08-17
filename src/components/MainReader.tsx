@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Book, Bookmark, BookSource, ThemeConfig } from '../types/reader';
 import { BookSourceEngine } from '../services/bookSourceEngine';
 import { HUDControls } from './HUDControls';
 import { TTSBar } from './TTSBar';
 import { TTSService } from '../services/ttsService';
-import { Loader2, BookmarkPlus } from 'lucide-react';
+import { ShortcutsModal } from './ShortcutsModal';
+import { Loader2, BookmarkPlus, Pause, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface MainReaderProps {
   book: Book;
@@ -35,6 +36,13 @@ export const MainReader: React.FC<MainReaderProps> = ({
   const [currentChapterContent, setCurrentChapterContent] = useState<string>('');
   const [selectedText, setSelectedText] = useState<string>('');
   const [selectionPos, setSelectionPos] = useState<{ x: number; y: number } | null>(null);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+
+  // Auto Scroll Engine
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  const [autoScrollSpeed, setAutoScrollSpeed] = useState<number>(2); // 1 to 5
+  const autoScrollRafRef = useRef<number | null>(null);
+  const isHoveredOrTouching = useRef<boolean>(false);
 
   // TTS State
   const [isTTSActive, setIsTTSActive] = useState(false);
@@ -89,7 +97,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
 
     loadChapter();
 
-    // Scroll to top when changing chapter
+    // Reset scroll when chapter changes
     if (containerRef.current) {
       containerRef.current.scrollTop = 0;
     }
@@ -107,6 +115,59 @@ export const MainReader: React.FC<MainReaderProps> = ({
       onUpdateBookProgress(book.currentChapterIndex, progress);
     }
   };
+
+  // Auto-scroll loop
+  const autoScrollStep = useCallback(() => {
+    if (!isAutoScrolling) return;
+
+    if (!isHoveredOrTouching.current && containerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+      if (scrollTop + clientHeight >= scrollHeight - 5) {
+        // Reached bottom of chapter, turn next chapter automatically!
+        setIsAutoScrolling(false);
+        onNextChapter();
+        return;
+      }
+      containerRef.current.scrollTop += autoScrollSpeed * 0.7;
+    }
+
+    autoScrollRafRef.current = requestAnimationFrame(autoScrollStep);
+  }, [isAutoScrolling, autoScrollSpeed, onNextChapter]);
+
+  useEffect(() => {
+    if (isAutoScrolling) {
+      autoScrollRafRef.current = requestAnimationFrame(autoScrollStep);
+    } else if (autoScrollRafRef.current) {
+      cancelAnimationFrame(autoScrollRafRef.current);
+    }
+    return () => {
+      if (autoScrollRafRef.current) cancelAnimationFrame(autoScrollRafRef.current);
+    };
+  }, [isAutoScrolling, autoScrollStep]);
+
+  // Keyboard Shortcuts (Space for Auto-scroll, ? for help, Arrow keys for chapter)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is in an input or textarea
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setIsAutoScrolling((prev) => !prev);
+      } else if (e.key === '?') {
+        setShowShortcutsModal((prev) => !prev);
+      } else if (e.key === 'ArrowRight' || e.key === ']') {
+        onNextChapter();
+      } else if (e.key === 'ArrowLeft' || e.key === '[') {
+        onPrevChapter();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onNextChapter, onPrevChapter]);
 
   // Handle Text Selection for Bookmarking
   const handleMouseUp = () => {
@@ -135,7 +196,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
       });
       setSelectedText('');
       setSelectionPos(null);
-      alert('已保存至书签与高亮！');
+      alert('已保存至书签与高亮！可在控制中心「书签」中查看');
     }
   };
 
@@ -171,6 +232,8 @@ export const MainReader: React.FC<MainReaderProps> = ({
         .filter((p) => p.length > 0)
     : [];
 
+  const wordCount = currentChapterContent ? currentChapterContent.replace(/\s+/g, '').length : 0;
+
   return (
     <div
       style={{
@@ -191,7 +254,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
           width: '100%',
           height: '100%',
           overflowY: 'auto',
-          padding: '24px 32px 80px 32px',
+          padding: '28px 36px 90px 36px',
           boxSizing: 'border-box',
           fontFamily: themeConfig.fontFamily,
           fontSize: `${themeConfig.fontSize}px`,
@@ -204,12 +267,13 @@ export const MainReader: React.FC<MainReaderProps> = ({
         <div
           style={{
             fontWeight: 700,
-            fontSize: `${themeConfig.fontSize + 6}px`,
-            marginBottom: '20px',
+            fontSize: `${themeConfig.fontSize + 8}px`,
+            marginBottom: '24px',
             color: 'var(--text-primary)',
             textAlign: 'center',
             borderBottom: '1px solid var(--glass-border)',
-            paddingBottom: '12px'
+            paddingBottom: '14px',
+            letterSpacing: '-0.3px'
           }}
         >
           {currentChapter.title}
@@ -232,7 +296,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
             <div style={{ fontSize: '13px' }}>正在为您加载章节内容...</div>
           </div>
         ) : (
-          <div style={{ maxWidth: '840px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '860px', margin: '0 auto' }}>
             {paragraphs.map((para, idx) => (
               <p
                 key={idx}
@@ -245,6 +309,46 @@ export const MainReader: React.FC<MainReaderProps> = ({
                 {para}
               </p>
             ))}
+
+            {/* Bottom Chapter End Navigator & Reading Stats */}
+            <div
+              style={{
+                marginTop: '48px',
+                paddingTop: '20px',
+                borderTop: '1px solid var(--glass-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '12px',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              <button
+                onClick={onPrevChapter}
+                disabled={book.currentChapterIndex <= 0}
+                className="frosted-btn"
+                style={{ padding: '6px 14px', borderRadius: '9999px' }}
+              >
+                <ChevronLeft size={14} />
+                <span>上一章</span>
+              </button>
+
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                <span>本章约 {wordCount} 字</span>
+                <span>·</span>
+                <span>进度 {book.currentProgressPercent}%</span>
+              </div>
+
+              <button
+                onClick={onNextChapter}
+                disabled={book.currentChapterIndex >= book.chapters.length - 1}
+                className="frosted-btn frosted-btn-primary"
+                style={{ padding: '6px 14px', borderRadius: '9999px' }}
+              >
+                <span>下一章</span>
+                <ChevronRight size={14} />
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -262,18 +366,70 @@ export const MainReader: React.FC<MainReaderProps> = ({
             alignItems: 'center',
             gap: '6px',
             padding: '4px 10px',
-            borderRadius: '10px',
+            borderRadius: '9999px',
             zIndex: 1000
           }}
         >
           <button
             onClick={handleSaveSelectionAsBookmark}
             className="frosted-btn"
-            style={{ padding: '3px 8px', fontSize: '11px', borderRadius: '8px' }}
+            style={{ padding: '4px 10px', fontSize: '11.5px', borderRadius: '9999px' }}
           >
-            <BookmarkPlus size={12} />
+            <BookmarkPlus size={13} style={{ color: 'var(--accent-color)' }} />
             <span>添加书签</span>
           </button>
+        </div>
+      )}
+
+      {/* Floating Auto-Scroll Speed Controller Pill (Bottom Right) */}
+      {isAutoScrolling && (
+        <div
+          className="ios-floating-bar animate-ios-spring tauri-no-drag"
+          style={{
+            position: 'absolute',
+            bottom: '76px',
+            right: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '6px 12px',
+            fontSize: '12px',
+            zIndex: 600,
+            background: 'var(--accent-gradient)',
+            color: '#fff',
+            boxShadow: 'var(--accent-glow)'
+          }}
+        >
+          <span style={{ fontWeight: 600, fontSize: '11.5px' }}>自动滚屏</span>
+          <button
+            onClick={() => setIsAutoScrolling(false)}
+            style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            title="暂停滚屏 (空格 Space)"
+          >
+            <Pause size={13} />
+          </button>
+
+          {/* Speed Buttons */}
+          <div style={{ display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.2)', padding: '2px', borderRadius: '9999px' }}>
+            {[1, 2, 3, 4, 5].map((speed) => (
+              <button
+                key={speed}
+                onClick={() => setAutoScrollSpeed(speed)}
+                style={{
+                  background: autoScrollSpeed === speed ? '#ffffff' : 'transparent',
+                  color: autoScrollSpeed === speed ? '#000000' : '#ffffff',
+                  border: 'none',
+                  borderRadius: '9999px',
+                  padding: '2px 6px',
+                  fontSize: '10.5px',
+                  fontWeight: autoScrollSpeed === speed ? 700 : 400,
+                  cursor: 'pointer'
+                }}
+              >
+                {speed}x
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -301,6 +457,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
           currentChapterIndex={book.currentChapterIndex}
           totalChapters={book.chapters.length}
           progressPercent={book.currentProgressPercent}
+          wordCount={wordCount}
           onPrevChapter={onPrevChapter}
           onNextChapter={onNextChapter}
           onJumpChapter={onJumpChapter}
@@ -311,8 +468,17 @@ export const MainReader: React.FC<MainReaderProps> = ({
             if (isTTSPlaying) handleStopTTS();
             else handleStartTTS();
           }}
+          isAutoScrolling={isAutoScrolling}
+          onToggleAutoScroll={() => setIsAutoScrolling((prev) => !prev)}
+          onOpenShortcuts={() => setShowShortcutsModal(true)}
         />
       )}
+
+      {/* Shortcuts Guide Modal */}
+      <ShortcutsModal
+        isOpen={showShortcutsModal}
+        onClose={() => setShowShortcutsModal(false)}
+      />
     </div>
   );
 };

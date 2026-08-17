@@ -570,6 +570,7 @@ export function App() {
         books={books}
         activeBook={activeBook}
         activeBookId={activeBookId}
+        bookmarks={bookmarks}
         sources={sources}
         themeConfig={themeConfig}
         stealthConfig={stealthConfig}
@@ -583,6 +584,17 @@ export function App() {
           }
         }}
         onSelectChapter={handleJumpChapter}
+        onSelectBookmark={(bm) => {
+          if (bm.bookId !== activeBookId) {
+            handleSelectBook(bm.bookId);
+          }
+          handleJumpChapter(bm.chapterIndex);
+        }}
+        onDeleteBookmark={(bmId) => {
+          const updated = bookmarks.filter((b) => b.id !== bmId);
+          setBookmarks(updated);
+          StorageService.saveBookmarks(updated);
+        }}
         onAddBookToShelf={handleAddBookToShelf}
         onUpdateSources={setSources}
         onUpdateTheme={setThemeConfig}

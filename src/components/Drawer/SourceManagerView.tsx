@@ -4,6 +4,7 @@ import { BookSourceEngine } from '../../services/bookSourceEngine';
 import { DEFAULT_BOOK_SOURCES } from '../../services/defaultSources';
 import { Plus, Download, Trash2, RotateCcw } from 'lucide-react';
 import { universalFetch } from '../../services/tauriBridge';
+import { IOSSwitch } from '../IOSSwitch';
 
 interface SourceManagerViewProps {
   sources: BookSource[];
@@ -83,11 +84,11 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
       {/* Top Action Bar */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', padding: '2px 0' }}>
         <button
           onClick={() => setImportModalOpen(true)}
           className="frosted-btn frosted-btn-primary"
-          style={{ flex: 1, padding: '8px 12px', borderRadius: '12px' }}
+          style={{ flex: 1, padding: '8px 12px', borderRadius: '9999px' }}
         >
           <Plus size={14} />
           <span>导入 Legado 3.0 书源</span>
@@ -96,7 +97,7 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
         <button
           onClick={handleExportJson}
           className="frosted-btn"
-          style={{ padding: '8px 12px', borderRadius: '12px' }}
+          style={{ padding: '8px 12px', borderRadius: '9999px' }}
           title="导出书源 JSON"
         >
           <Download size={14} />
@@ -106,14 +107,14 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
         <button
           onClick={handleRestoreDefaults}
           className="frosted-btn"
-          style={{ padding: '8px 12px', borderRadius: '12px' }}
+          style={{ padding: '8px 12px', borderRadius: '9999px' }}
           title="恢复内置书源"
         >
           <RotateCcw size={14} />
         </button>
       </div>
 
-      {/* Sources List */}
+      {/* Sources List with soft ambient borders and no clipped shadows */}
       <div
         style={{
           flex: 1,
@@ -121,21 +122,22 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
           display: 'flex',
           flexDirection: 'column',
           gap: '8px',
-          paddingRight: '4px'
+          padding: '4px 2px 10px 2px'
         }}
       >
         {sources.map((source) => (
           <div
             key={source.id}
-            className="frosted-panel"
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '10px 14px',
-              borderRadius: '14px',
+              padding: '12px 14px',
+              borderRadius: '16px',
               background: source.enabled ? 'var(--glass-surface-hover)' : 'var(--glass-surface)',
-              opacity: source.enabled ? 1 : 0.6
+              border: '1px solid var(--glass-border)',
+              opacity: source.enabled ? 1 : 0.65,
+              transition: 'background 0.2s var(--ios-spring), border-color 0.2s ease'
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
@@ -144,7 +146,7 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
                   {source.name}
                 </span>
                 {source.weight && (
-                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                  <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
                     权重: {source.weight}
                   </span>
                 )}
@@ -163,20 +165,12 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
-                onClick={() => handleToggleEnable(source.id)}
-                className="frosted-btn"
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '9999px',
-                  fontSize: '11px',
-                  background: source.enabled ? 'var(--accent-color)' : 'rgba(0,0,0,0.1)',
-                  color: source.enabled ? '#ffffff' : 'var(--text-muted)'
-                }}
-              >
-                {source.enabled ? '已启用' : '已禁用'}
-              </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <IOSSwitch
+                size="sm"
+                checked={source.enabled}
+                onChange={() => handleToggleEnable(source.id)}
+              />
 
               <button
                 onClick={() => handleDeleteSource(source.id)}
@@ -190,7 +184,7 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
                 onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
                 onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
               >
-                <Trash2 size={13} />
+                <Trash2 size={14} />
               </button>
             </div>
           </div>
@@ -244,7 +238,7 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
               <button
                 onClick={() => setImportModalOpen(false)}
                 className="frosted-btn"
-                style={{ padding: '7px 14px', borderRadius: '10px' }}
+                style={{ padding: '7px 14px', borderRadius: '9999px' }}
               >
                 取消
               </button>
@@ -252,7 +246,7 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
                 disabled={isImporting}
                 onClick={handleImportSubmit}
                 className="frosted-btn frosted-btn-primary"
-                style={{ padding: '7px 16px', borderRadius: '10px' }}
+                style={{ padding: '7px 16px', borderRadius: '9999px' }}
               >
                 {isImporting ? '解析中...' : '确认导入'}
               </button>

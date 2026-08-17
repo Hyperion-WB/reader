@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Book, BookSource, StealthConfig, ThemeConfig } from '../types/reader';
+import { Book, Bookmark, BookSource, StealthConfig, ThemeConfig } from '../types/reader';
 import { BookshelfView } from './Drawer/BookshelfView';
 import { TocView } from './Drawer/TocView';
+import { BookmarksView } from './Drawer/BookmarksView';
 import { OnlineSearchView } from './Drawer/OnlineSearchView';
 import { SourceManagerView } from './Drawer/SourceManagerView';
 import { StyleStudioView } from './Drawer/StyleStudioView';
@@ -10,6 +11,7 @@ import { IOSSegmentedControl } from './IOSSegmentedControl';
 import {
   Library,
   ListTree,
+  Bookmark as BookmarkIcon,
   Search,
   Globe,
   Palette,
@@ -17,7 +19,7 @@ import {
   X
 } from 'lucide-react';
 
-export type DrawerTab = 'bookshelf' | 'toc' | 'search' | 'sources' | 'style' | 'stealth';
+export type DrawerTab = 'bookshelf' | 'toc' | 'bookmarks' | 'search' | 'sources' | 'style' | 'stealth';
 
 interface GlassDrawerProps {
   isOpen: boolean;
@@ -25,6 +27,7 @@ interface GlassDrawerProps {
   books: Book[];
   activeBook: Book | null;
   activeBookId: string | null;
+  bookmarks: Bookmark[];
   sources: BookSource[];
   themeConfig: ThemeConfig;
   stealthConfig: StealthConfig;
@@ -32,6 +35,8 @@ interface GlassDrawerProps {
   onDeleteBook: (id: string) => void;
   onImportLocal: () => void;
   onSelectChapter: (index: number) => void;
+  onSelectBookmark: (bookmark: Bookmark) => void;
+  onDeleteBookmark: (id: string) => void;
   onAddBookToShelf: (book: Book) => void;
   onUpdateSources: (sources: BookSource[]) => void;
   onUpdateTheme: (theme: ThemeConfig) => void;
@@ -45,6 +50,7 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
   books,
   activeBook,
   activeBookId,
+  bookmarks,
   sources,
   themeConfig,
   stealthConfig,
@@ -52,6 +58,8 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
   onDeleteBook,
   onImportLocal,
   onSelectChapter,
+  onSelectBookmark,
+  onDeleteBookmark,
   onAddBookToShelf,
   onUpdateSources,
   onUpdateTheme,
@@ -63,12 +71,13 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
   if (!isOpen) return null;
 
   const navItems: { id: DrawerTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'bookshelf', label: '书架', icon: <Library size={15} /> },
-    { id: 'toc', label: '目录', icon: <ListTree size={15} /> },
-    { id: 'search', label: '搜书', icon: <Search size={15} /> },
-    { id: 'sources', label: '书源', icon: <Globe size={15} /> },
-    { id: 'style', label: '排版', icon: <Palette size={15} /> },
-    { id: 'stealth', label: '摸鱼', icon: <ShieldCheck size={15} /> }
+    { id: 'bookshelf', label: '书架', icon: <Library size={13} /> },
+    { id: 'toc', label: '目录', icon: <ListTree size={13} /> },
+    { id: 'bookmarks', label: '书签', icon: <BookmarkIcon size={13} /> },
+    { id: 'search', label: '搜书', icon: <Search size={13} /> },
+    { id: 'sources', label: '书源', icon: <Globe size={13} /> },
+    { id: 'style', label: '排版', icon: <Palette size={13} /> },
+    { id: 'stealth', label: '摸鱼', icon: <ShieldCheck size={13} /> }
   ];
 
   return (
@@ -78,9 +87,9 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
         inset: 0,
         zIndex: 2000,
         display: 'flex',
-        background: 'rgba(0, 0, 0, 0.35)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)'
+        background: 'rgba(0, 0, 0, 0.45)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)'
       }}
       onClick={onClose}
     >
@@ -88,22 +97,23 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
       <div
         className="frosted-panel animate-ios-drawer"
         style={{
-          width: '440px',
-          maxWidth: '85vw',
+          width: '460px',
+          maxWidth: '88vw',
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          padding: '18px',
+          padding: '18px 16px',
           boxSizing: 'border-box',
-          gap: '14px',
-          borderRight: '1px solid var(--glass-border)',
-          borderRadius: '0 20px 20px 0'
+          gap: '12px',
+          borderRight: '1px solid var(--glass-border-hover)',
+          borderRadius: '0 20px 20px 0',
+          boxShadow: '8px 0 32px rgba(0, 0, 0, 0.25)'
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header & Segmented Tabs */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontWeight: 700, fontSize: '17px', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
+          <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
             控制中心
           </div>
           <button
@@ -112,7 +122,7 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
             style={{ padding: '6px', borderRadius: '50%' }}
             title="关闭侧边栏 (Esc)"
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
 
@@ -121,11 +131,11 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
           items={navItems}
           activeId={activeTab}
           onChange={setActiveTab}
-          height={38}
+          height={36}
         />
 
-        {/* Drawer Tab Content */}
-        <div style={{ flex: 1, overflow: 'hidden' }}>
+        {/* Drawer Tab Content with generous padding to prevent clipped shadows */}
+        <div style={{ flex: 1, overflow: 'hidden', padding: '4px 2px' }}>
           {activeTab === 'bookshelf' && (
             <BookshelfView
               books={books}
@@ -148,6 +158,18 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
                 onSelectChapter(idx);
                 onClose();
               }}
+            />
+          )}
+
+          {activeTab === 'bookmarks' && (
+            <BookmarksView
+              bookmarks={bookmarks}
+              activeBookId={activeBookId}
+              onSelectBookmark={(bm) => {
+                onSelectBookmark(bm);
+                onClose();
+              }}
+              onDeleteBookmark={onDeleteBookmark}
             />
           )}
 

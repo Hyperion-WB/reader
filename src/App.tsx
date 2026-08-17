@@ -23,7 +23,8 @@ import {
   windowControls
 } from './services/tauriBridge';
 import { parseEpubFile, parseTxtFile } from './services/localFileParser';
-import { BookOpen, Upload, Plus } from 'lucide-react';
+import { Upload, Plus } from 'lucide-react';
+import { CuteAppIcon } from './components/CuteAppIcon';
 import './styles/glass.css';
 
 export function App() {
@@ -434,23 +435,8 @@ export function App() {
                 gap: '18px'
               }}
             >
-              {/* App Icon */}
-              <div
-                style={{
-                  width: '68px',
-                  height: '68px',
-                  borderRadius: '20px',
-                  background: 'var(--accent-gradient)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#ffffff',
-                  boxShadow: 'var(--accent-glow)',
-                  marginBottom: '4px'
-                }}
-              >
-                <BookOpen size={34} />
-              </div>
+              {/* Cute Mascot App Icon */}
+              <CuteAppIcon size={84} style={{ marginBottom: '4px' }} />
 
               {/* Title & Subtitle with Crisp Contrast */}
               <div>

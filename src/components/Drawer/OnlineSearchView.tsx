@@ -108,15 +108,15 @@ export const OnlineSearchView: React.FC<OnlineSearchViewProps> = ({
             placeholder="输入书名或作者（如：诡秘之主、辰东、大奉打更人）..."
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            className="liquid-glass-input"
+            className="frosted-input"
             style={{ paddingLeft: '34px' }}
           />
         </div>
         <button
           type="submit"
           disabled={isSearching}
-          className="liquid-glass-btn liquid-glass-btn-primary"
-          style={{ padding: '0 16px', minWidth: '80px' }}
+          className="frosted-btn frosted-btn-primary"
+          style={{ padding: '0 16px', minWidth: '80px', borderRadius: '12px' }}
         >
           {isSearching ? <Loader2 size={14} className="animate-spin" /> : '搜索'}
         </button>
@@ -155,14 +155,14 @@ export const OnlineSearchView: React.FC<OnlineSearchViewProps> = ({
           return (
             <div
               key={`${item.sourceId}-${item.detailUrl}-${idx}`}
-              className="liquid-glass-panel"
+              className="frosted-panel"
               style={{
                 display: 'flex',
                 gap: '12px',
                 padding: '12px',
                 borderRadius: '14px',
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid var(--glass-border-color)'
+                background: 'var(--glass-surface)',
+                border: '1px solid var(--glass-border)'
               }}
             >
               {/* Cover */}
@@ -198,7 +198,7 @@ export const OnlineSearchView: React.FC<OnlineSearchViewProps> = ({
                         fontSize: '11px',
                         padding: '1px 6px',
                         borderRadius: '6px',
-                        background: 'rgba(255,255,255,0.15)',
+                        background: 'rgba(0,0,0,0.15)',
                         color: 'var(--accent-color)'
                       }}
                     >
@@ -230,8 +230,8 @@ export const OnlineSearchView: React.FC<OnlineSearchViewProps> = ({
                   <button
                     disabled={isLoadingThis}
                     onClick={() => handleSelectResult(item)}
-                    className="liquid-glass-btn liquid-glass-btn-primary"
-                    style={{ padding: '4px 12px', fontSize: '12px' }}
+                    className="frosted-btn frosted-btn-primary"
+                    style={{ padding: '5px 12px', fontSize: '12px', borderRadius: '10px' }}
                   >
                     {isLoadingThis ? (
                       <>

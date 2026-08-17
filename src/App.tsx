@@ -28,12 +28,17 @@ import './styles/glass.css';
 export function App() {
   // Main State
   const [books, setBooks] = useState<Book[]>(() => StorageService.getBooks());
-  const [activeBookId, setActiveBookId] = useState<string | null>(() => StorageService.getActiveBookId());
+  const [activeBookId, setActiveBookId] = useState<string | null>(() => {
+    const saved = StorageService.getActiveBookId();
+    if (saved) return saved;
+    const initialBooks = StorageService.getBooks();
+    return initialBooks.length > 0 ? initialBooks[0].id : null;
+  });
   const [openTabIds, setOpenTabIds] = useState<string[]>(() => {
     const saved = StorageService.getOpenTabs();
     if (saved.length > 0) return saved;
     const initialBooks = StorageService.getBooks();
-    return initialBooks.length > 0 ? [initialBooks[0].id] : [];
+    return initialBooks.length > 0 ? initialBooks.map((b) => b.id) : [];
   });
   const [sources, setSources] = useState<BookSource[]>(() => StorageService.getSources());
   const [themeConfig, setThemeConfig] = useState<ThemeConfig>(() => StorageService.getThemeConfig());
@@ -340,10 +345,11 @@ export function App() {
         flexDirection: 'column',
         position: 'relative',
         overflow: 'hidden',
+        background: 'var(--bg-app)',
+        backdropFilter: 'blur(var(--glass-blur)) saturate(var(--glass-saturate))',
+        WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(var(--glass-saturate))',
         opacity: windowOpacity,
-        transition: `opacity ${stealthConfig.mouseAutoFadeDuration}ms cubic-bezier(0.16, 1, 0.3, 1)`,
-        borderRadius: '14px',
-        border: themeConfig.glassBorder ? '1px solid var(--glass-border-color)' : 'none',
+        transition: `opacity ${stealthConfig.mouseAutoFadeDuration}ms var(--ios-spring)`,
         boxSizing: 'border-box'
       }}
     >
@@ -395,85 +401,151 @@ export function App() {
           <div
             style={{
               display: 'flex',
-              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               height: '100%',
-              gap: '16px',
-              padding: '24px',
-              textAlign: 'center',
-              color: 'var(--text-primary)'
+              padding: '20px'
             }}
           >
             <div
+              className="frosted-panel animate-ios-spring"
               style={{
-                width: '72px',
-                height: '72px',
-                borderRadius: '24px',
-                background: 'linear-gradient(135deg, rgba(0,113,227,0.8), rgba(147,51,234,0.8))',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#fff',
-                boxShadow: '0 12px 32px rgba(0, 113, 227, 0.35)',
-                backdropFilter: 'blur(20px)'
+                padding: '36px 44px',
+                borderRadius: '24px',
+                textAlign: 'center',
+                maxWidth: '460px',
+                width: '100%',
+                gap: '18px'
               }}
             >
-              <BookOpen size={36} />
-            </div>
-
-            <div>
-              <div style={{ fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px' }}>
-                LiquidReader
-              </div>
-              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                Windows 液态玻璃摸鱼小说阅读器
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
-              <button
-                onClick={() => {
-                  if (isTauri()) {
-                    handleImportLocalFile();
-                  } else {
-                    document.getElementById('html5-file-input')?.click();
-                  }
+              {/* App Icon */}
+              <div
+                style={{
+                  width: '68px',
+                  height: '68px',
+                  borderRadius: '20px',
+                  background: 'var(--accent-gradient)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  boxShadow: 'var(--accent-glow)',
+                  marginBottom: '4px'
                 }}
-                className="liquid-glass-btn liquid-glass-btn-primary"
-                style={{ padding: '8px 16px', fontSize: '13px' }}
               >
-                <Upload size={15} />
-                <span>导入本地小说 (TXT/EPUB)</span>
-              </button>
+                <BookOpen size={34} />
+              </div>
 
-              <button
-                onClick={() => setIsDrawerOpen(true)}
-                className="liquid-glass-btn"
-                style={{ padding: '8px 16px', fontSize: '13px' }}
+              {/* Title & Subtitle with Crisp Contrast */}
+              <div>
+                <div
+                  style={{
+                    fontSize: '22px',
+                    fontWeight: 700,
+                    color: 'var(--text-primary)',
+                    letterSpacing: '-0.4px'
+                  }}
+                >
+                  LiquidReader
+                </div>
+                <div
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--text-secondary)',
+                    marginTop: '6px',
+                    lineHeight: 1.5
+                  }}
+                >
+                  Windows 通透磨砂风 · 摸鱼沉浸双模小说阅读器
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '12px', width: '100%', marginTop: '6px' }}>
+                <button
+                  onClick={() => {
+                    if (isTauri()) {
+                      handleImportLocalFile();
+                    } else {
+                      document.getElementById('html5-file-input')?.click();
+                    }
+                  }}
+                  className="frosted-btn frosted-btn-primary"
+                  style={{ flex: 1, padding: '10px 16px', fontSize: '13.5px', borderRadius: '14px' }}
+                >
+                  <Upload size={16} />
+                  <span>导入本地 (TXT / EPUB)</span>
+                </button>
+
+                <button
+                  onClick={() => setIsDrawerOpen(true)}
+                  className="frosted-btn"
+                  style={{ flex: 1, padding: '10px 16px', fontSize: '13.5px', borderRadius: '14px' }}
+                >
+                  <Plus size={16} />
+                  <span>全网书源搜书</span>
+                </button>
+              </div>
+
+              {/* Shortcut Cheat Badges */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  marginTop: '8px'
+                }}
               >
-                <Plus size={15} />
-                <span>全网书源搜书</span>
-              </button>
-            </div>
-
-            {/* Quick Feature Pills */}
-            <div
-              style={{
-                display: 'flex',
-                gap: '8px',
-                marginTop: '16px',
-                fontSize: '11px',
-                color: 'var(--text-muted)'
-              }}
-            >
-              <span>老板键: Alt+`</span>
-              <span>·</span>
-              <span>Excel伪装: Alt+E</span>
-              <span>·</span>
-              <span>VSCode伪装: Alt+C</span>
-              <span>·</span>
-              <span>单行极简: Alt+1</span>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    color: 'var(--text-muted)',
+                    background: 'rgba(0,0,0,0.12)',
+                    padding: '3px 8px',
+                    borderRadius: '6px'
+                  }}
+                >
+                  老板键: Alt+`
+                </span>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    color: 'var(--text-muted)',
+                    background: 'rgba(0,0,0,0.12)',
+                    padding: '3px 8px',
+                    borderRadius: '6px'
+                  }}
+                >
+                  Excel伪装: Alt+E
+                </span>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    color: 'var(--text-muted)',
+                    background: 'rgba(0,0,0,0.12)',
+                    padding: '3px 8px',
+                    borderRadius: '6px'
+                  }}
+                >
+                  VSCode伪装: Alt+C
+                </span>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    color: 'var(--text-muted)',
+                    background: 'rgba(0,0,0,0.12)',
+                    padding: '3px 8px',
+                    borderRadius: '6px'
+                  }}
+                >
+                  单行极简: Alt+1
+                </span>
+              </div>
             </div>
           </div>
         )}

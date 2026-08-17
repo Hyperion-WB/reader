@@ -252,7 +252,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
       {/* Text Selection Floating Bookmark Popup */}
       {selectionPos && selectedText && (
         <div
-          className="liquid-glass-panel animate-spring-in tauri-no-drag"
+          className="frosted-panel animate-ios-spring tauri-no-drag"
           style={{
             position: 'fixed',
             left: `${selectionPos.x}px`,
@@ -262,14 +262,14 @@ export const MainReader: React.FC<MainReaderProps> = ({
             alignItems: 'center',
             gap: '6px',
             padding: '4px 10px',
-            borderRadius: '8px',
+            borderRadius: '10px',
             zIndex: 1000
           }}
         >
           <button
             onClick={handleSaveSelectionAsBookmark}
-            className="liquid-glass-btn"
-            style={{ padding: '3px 8px', fontSize: '11px' }}
+            className="frosted-btn"
+            style={{ padding: '3px 8px', fontSize: '11px', borderRadius: '8px' }}
           >
             <BookmarkPlus size={12} />
             <span>添加书签</span>

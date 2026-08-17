@@ -42,15 +42,15 @@ export const TocView: React.FC<TocViewProps> = ({
             placeholder="搜索章节名..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="liquid-glass-input"
+            className="frosted-input"
             style={{ paddingLeft: '32px' }}
           />
         </div>
 
         <button
           onClick={() => setIsReversed(!isReversed)}
-          className="liquid-glass-btn"
-          style={{ padding: '8px 10px', borderRadius: '10px' }}
+          className="frosted-btn"
+          style={{ padding: '8px 12px', borderRadius: '12px' }}
           title={isReversed ? '当前：倒序' : '当前：正序'}
         >
           <ArrowUpDown size={14} />
@@ -71,16 +71,16 @@ export const TocView: React.FC<TocViewProps> = ({
               <div
                 key={chapter.id || chapter.index}
                 onClick={() => onSelectChapter(chapter.index)}
-                className="liquid-glass-btn"
+                className="frosted-btn"
                 style={{
                   justifyContent: 'space-between',
                   padding: '9px 14px',
                   borderRadius: '12px',
-                  background: isCurrent ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.08)',
+                  background: isCurrent ? 'var(--accent-color)' : 'var(--glass-surface)',
                   color: isCurrent ? '#ffffff' : 'var(--text-primary)',
                   fontWeight: isCurrent ? 600 : 400,
                   fontSize: '13px',
-                  border: isCurrent ? '1px solid rgba(255,255,255,0.4)' : '1px solid transparent'
+                  border: isCurrent ? '1px solid rgba(255,255,255,0.35)' : '1px solid var(--glass-border)'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
@@ -90,7 +90,7 @@ export const TocView: React.FC<TocViewProps> = ({
                   </span>
                 </div>
                 {isCurrent && (
-                  <span style={{ fontSize: '11px', opacity: 0.8, flexShrink: 0 }}>当前阅读</span>
+                  <span style={{ fontSize: '11px', opacity: 0.9, flexShrink: 0 }}>当前阅读</span>
                 )}
               </div>
             );

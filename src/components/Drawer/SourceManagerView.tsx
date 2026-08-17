@@ -86,8 +86,8 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         <button
           onClick={() => setImportModalOpen(true)}
-          className="liquid-glass-btn liquid-glass-btn-primary"
-          style={{ flex: 1, padding: '7px 10px' }}
+          className="frosted-btn frosted-btn-primary"
+          style={{ flex: 1, padding: '8px 12px', borderRadius: '12px' }}
         >
           <Plus size={14} />
           <span>导入 Legado 3.0 书源</span>
@@ -95,8 +95,8 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
 
         <button
           onClick={handleExportJson}
-          className="liquid-glass-btn"
-          style={{ padding: '7px 10px' }}
+          className="frosted-btn"
+          style={{ padding: '8px 12px', borderRadius: '12px' }}
           title="导出书源 JSON"
         >
           <Download size={14} />
@@ -105,8 +105,8 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
 
         <button
           onClick={handleRestoreDefaults}
-          className="liquid-glass-btn"
-          style={{ padding: '7px 10px' }}
+          className="frosted-btn"
+          style={{ padding: '8px 12px', borderRadius: '12px' }}
           title="恢复内置书源"
         >
           <RotateCcw size={14} />
@@ -127,14 +127,14 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
         {sources.map((source) => (
           <div
             key={source.id}
-            className="liquid-glass-panel"
+            className="frosted-panel"
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '10px 14px',
-              borderRadius: '12px',
-              background: source.enabled ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.03)',
+              borderRadius: '14px',
+              background: source.enabled ? 'var(--glass-surface-hover)' : 'var(--glass-surface)',
               opacity: source.enabled ? 1 : 0.6
             }}
           >
@@ -166,12 +166,12 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
                 onClick={() => handleToggleEnable(source.id)}
-                className="liquid-glass-btn"
+                className="frosted-btn"
                 style={{
                   padding: '4px 10px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   fontSize: '11px',
-                  background: source.enabled ? 'var(--accent-color)' : 'rgba(255,255,255,0.1)',
+                  background: source.enabled ? 'var(--accent-color)' : 'rgba(0,0,0,0.1)',
                   color: source.enabled ? '#ffffff' : 'var(--text-muted)'
                 }}
               >
@@ -213,18 +213,18 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
           }}
         >
           <div
-            className="liquid-glass-panel animate-spring-in"
+            className="frosted-panel animate-ios-spring"
             style={{
               width: '100%',
               maxWidth: '480px',
-              padding: '20px',
-              borderRadius: '18px',
+              padding: '22px',
+              borderRadius: '20px',
               display: 'flex',
               flexDirection: 'column',
               gap: '12px'
             }}
           >
-            <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--text-primary)' }}>
+            <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)' }}>
               导入 Legado 3.0 / 阅读书源
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
@@ -236,23 +236,23 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
               value={importInput}
               onChange={(e) => setImportInput(e.target.value)}
               placeholder="在此粘贴书源 JSON 或书源链接..."
-              className="liquid-glass-input"
-              style={{ resize: 'none', fontFamily: 'monospace', fontSize: '11px' }}
+              className="frosted-input"
+              style={{ resize: 'none', fontFamily: 'var(--font-mono)', fontSize: '11.5px' }}
             />
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
               <button
                 onClick={() => setImportModalOpen(false)}
-                className="liquid-glass-btn"
-                style={{ padding: '6px 14px' }}
+                className="frosted-btn"
+                style={{ padding: '7px 14px', borderRadius: '10px' }}
               >
                 取消
               </button>
               <button
                 disabled={isImporting}
                 onClick={handleImportSubmit}
-                className="liquid-glass-btn liquid-glass-btn-primary"
-                style={{ padding: '6px 16px' }}
+                className="frosted-btn frosted-btn-primary"
+                style={{ padding: '7px 16px', borderRadius: '10px' }}
               >
                 {isImporting ? '解析中...' : '确认导入'}
               </button>

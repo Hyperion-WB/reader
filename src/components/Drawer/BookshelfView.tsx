@@ -25,16 +25,16 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
       <div style={{ display: 'flex', gap: '8px' }}>
         <button
           onClick={onImportLocal}
-          className="liquid-glass-btn liquid-glass-btn-primary"
-          style={{ flex: 1, padding: '8px 12px' }}
+          className="frosted-btn frosted-btn-primary"
+          style={{ flex: 1, padding: '9px 12px', borderRadius: '12px' }}
         >
           <Upload size={14} />
           <span>导入本地 (TXT / EPUB)</span>
         </button>
         <button
           onClick={onOpenSearch}
-          className="liquid-glass-btn"
-          style={{ flex: 1, padding: '8px 12px' }}
+          className="frosted-btn"
+          style={{ flex: 1, padding: '9px 12px', borderRadius: '12px' }}
         >
           <Plus size={14} />
           <span>全网搜书 / 导入书源</span>
@@ -80,16 +80,16 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
               <div
                 key={book.id}
                 onClick={() => onSelectBook(book.id)}
-                className="liquid-glass-panel"
+                className="frosted-panel"
                 style={{
                   display: 'flex',
                   gap: '12px',
                   padding: '12px',
                   borderRadius: '16px',
                   cursor: 'pointer',
-                  border: isActive ? '1px solid var(--accent-color)' : '1px solid var(--glass-border-color)',
-                  background: isActive ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.08)',
-                  transition: 'all 0.22s var(--spring-smooth)'
+                  border: isActive ? '1px solid var(--accent-color)' : '1px solid var(--glass-border)',
+                  background: isActive ? 'var(--glass-surface-active)' : 'var(--glass-surface)',
+                  boxShadow: isActive ? '0 4px 16px rgba(0,0,0,0.12)' : 'none'
                 }}
               >
                 {/* Book Cover Placeholder or Image */}

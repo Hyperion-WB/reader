@@ -41,16 +41,17 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
               <button
                 key={p.id}
                 onClick={() => onUpdateTheme({ ...themeConfig, themePreset: p.id })}
-                className="liquid-glass-btn"
+                className="frosted-btn"
                 style={{
                   padding: '8px 6px',
                   borderRadius: '12px',
-                  background: isSelected ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.08)',
+                  background: isSelected ? 'var(--accent-color)' : 'var(--glass-surface)',
                   color: isSelected ? '#ffffff' : 'var(--text-primary)',
                   fontWeight: isSelected ? 600 : 400,
                   fontSize: '12px',
                   flexDirection: 'column',
-                  gap: '4px'
+                  gap: '4px',
+                  border: isSelected ? '1px solid rgba(255,255,255,0.3)' : '1px solid var(--glass-border)'
                 }}
               >
                 {p.icon}
@@ -62,15 +63,15 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
       </div>
 
       {/* Glass Transparency & Blur */}
-      <div className="liquid-glass-panel" style={{ padding: '14px', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="frosted-panel" style={{ padding: '14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Layers size={14} />
-          <span>液态玻璃材质精调</span>
+          <span>通透磨砂材质精调</span>
         </div>
 
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-            <span>毛玻璃模糊度 (Blur)</span>
+            <span>磨砂模糊度 (Blur)</span>
             <span>{themeConfig.glassBlurRadius}px</span>
           </div>
           <input
@@ -101,7 +102,7 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
       </div>
 
       {/* Typography Studio */}
-      <div className="liquid-glass-panel" style={{ padding: '14px', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="frosted-panel" style={{ padding: '14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Type size={14} />
           <span>文字排版微调</span>
@@ -112,7 +113,7 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
           <select
             value={themeConfig.fontFamily}
             onChange={(e) => onUpdateTheme({ ...themeConfig, fontFamily: e.target.value })}
-            className="liquid-glass-input"
+            className="frosted-input"
             style={{ padding: '6px 10px', fontSize: '12px' }}
           >
             {fonts.map((f, idx) => (

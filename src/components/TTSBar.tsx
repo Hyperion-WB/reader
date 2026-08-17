@@ -20,16 +20,15 @@ export const TTSBar: React.FC<TTSBarProps> = ({
 }) => {
   return (
     <div
-      className="liquid-glass-panel animate-spring-in tauri-no-drag"
+      className="ios-floating-bar animate-ios-spring tauri-no-drag"
       style={{
         position: 'absolute',
-        top: '52px',
-        right: '16px',
+        top: '56px',
+        right: '18px',
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
         padding: '5px 12px',
-        borderRadius: '12px',
         fontSize: '12px',
         zIndex: 600
       }}
@@ -38,16 +37,16 @@ export const TTSBar: React.FC<TTSBarProps> = ({
       <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>TTS 听书</span>
 
       {isPlaying ? (
-        <button onClick={onPause} className="liquid-glass-btn" style={{ padding: '3px 6px' }}>
+        <button onClick={onPause} className="frosted-btn" style={{ padding: '3px 6px', borderRadius: '8px' }}>
           <Pause size={12} />
         </button>
       ) : (
-        <button onClick={onPlay} className="liquid-glass-btn" style={{ padding: '3px 6px' }}>
+        <button onClick={onPlay} className="frosted-btn" style={{ padding: '3px 6px', borderRadius: '8px' }}>
           <Play size={12} />
         </button>
       )}
 
-      <button onClick={onStop} className="liquid-glass-btn" style={{ padding: '3px 6px' }}>
+      <button onClick={onStop} className="frosted-btn" style={{ padding: '3px 6px', borderRadius: '8px' }}>
         <Square size={12} />
       </button>
 
@@ -55,8 +54,8 @@ export const TTSBar: React.FC<TTSBarProps> = ({
       <select
         value={rate}
         onChange={(e) => onChangeRate(Number(e.target.value))}
-        className="liquid-glass-input"
-        style={{ padding: '2px 6px', fontSize: '11px', width: '65px' }}
+        className="frosted-input"
+        style={{ padding: '2px 6px', fontSize: '11px', width: '65px', borderRadius: '8px' }}
       >
         <option value={0.8} style={{ background: '#222', color: '#fff' }}>0.8x</option>
         <option value={1.0} style={{ background: '#222', color: '#fff' }}>1.0x</option>

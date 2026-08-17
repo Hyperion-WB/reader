@@ -85,28 +85,29 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
     >
       {/* Drawer Main Container */}
       <div
-        className="liquid-glass-panel animate-drawer-slide"
+        className="frosted-panel animate-ios-drawer"
         style={{
-          width: '420px',
+          width: '440px',
           maxWidth: '85vw',
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          padding: '16px',
+          padding: '18px',
           boxSizing: 'border-box',
           gap: '14px',
-          borderRight: '1px solid var(--glass-border-color)'
+          borderRight: '1px solid var(--glass-border)',
+          borderRadius: '0 20px 20px 0'
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header & Segmented Tabs */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>
+          <div style={{ fontWeight: 700, fontSize: '17px', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
             控制中心
           </div>
           <button
             onClick={onClose}
-            className="liquid-glass-btn"
+            className="frosted-btn"
             style={{ padding: '6px', borderRadius: '50%' }}
             title="关闭侧边栏 (Esc)"
           >

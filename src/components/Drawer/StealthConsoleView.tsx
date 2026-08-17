@@ -61,7 +61,7 @@ export const StealthConsoleView: React.FC<StealthConsoleViewProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px', overflowY: 'auto', paddingRight: '4px' }}>
       {/* Boss Key Config */}
-      <div className="liquid-glass-panel" style={{ padding: '14px', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div className="frosted-panel" style={{ padding: '14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <EyeOff size={14} />
           <span>极速老板键 (0ms 瞬时抹除)</span>
@@ -72,7 +72,7 @@ export const StealthConsoleView: React.FC<StealthConsoleViewProps> = ({
           <select
             value={stealthConfig.bossKeyShortcut}
             onChange={(e) => onUpdateStealth({ ...stealthConfig, bossKeyShortcut: e.target.value })}
-            className="liquid-glass-input"
+            className="frosted-input"
             style={{ padding: '6px 10px', fontSize: '12px' }}
           >
             <option value="Alt+`" style={{ background: '#222', color: '#fff' }}>Alt + ` (波浪键，默认推荐)</option>
@@ -84,7 +84,7 @@ export const StealthConsoleView: React.FC<StealthConsoleViewProps> = ({
       </div>
 
       {/* Mouse Proximity Auto-Fade */}
-      <div className="liquid-glass-panel" style={{ padding: '14px', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="frosted-panel" style={{ padding: '14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <MousePointer size={14} />
@@ -118,7 +118,7 @@ export const StealthConsoleView: React.FC<StealthConsoleViewProps> = ({
       </div>
 
       {/* Advanced Stealth Toggles */}
-      <div className="liquid-glass-panel" style={{ padding: '14px', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div className="frosted-panel" style={{ padding: '14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Shield size={14} />
           <span>高级反侦察选项</span>
@@ -146,17 +146,17 @@ export const StealthConsoleView: React.FC<StealthConsoleViewProps> = ({
       </div>
 
       {/* Backup & Cloud Sync */}
-      <div className="liquid-glass-panel" style={{ padding: '14px', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div className="frosted-panel" style={{ padding: '14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Monitor size={14} />
           <span>数据备份与迁移</span>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={handleExportBackup} className="liquid-glass-btn" style={{ flex: 1, padding: '6px 8px' }}>
+          <button onClick={handleExportBackup} className="frosted-btn" style={{ flex: 1, padding: '7px 10px', borderRadius: '10px' }}>
             <Download size={13} />
             <span>导出全部数据</span>
           </button>
-          <button onClick={handleImportBackup} className="liquid-glass-btn" style={{ flex: 1, padding: '6px 8px' }}>
+          <button onClick={handleImportBackup} className="frosted-btn" style={{ flex: 1, padding: '7px 10px', borderRadius: '10px' }}>
             <Upload size={13} />
             <span>恢复数据</span>
           </button>

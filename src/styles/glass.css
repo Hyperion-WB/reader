@@ -1,0 +1,295 @@
+/* Liquid Glass & Apple Spring Animation System for LiquidReader */
+
+:root {
+  /* Dynamic Liquid Glass Tokens */
+  --glass-bg-base: rgba(255, 255, 255, 0.55);
+  --glass-bg-l0: rgba(255, 255, 255, 0);
+  --glass-bg-l1: rgba(255, 255, 255, 0.25);
+  --glass-bg-l2: rgba(255, 255, 255, 0.55);
+  --glass-bg-l3: rgba(245, 245, 247, 0.85);
+
+  --glass-blur: 24px;
+  --glass-border-color: rgba(255, 255, 255, 0.35);
+  --glass-border-fresnel: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.25) 100%);
+  --glass-inner-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.18), 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+
+  --text-primary: #1d1d1f;
+  --text-secondary: rgba(29, 29, 31, 0.65);
+  --text-muted: rgba(29, 29, 31, 0.4);
+  --accent-color: #0071e3;
+  --accent-glow: rgba(0, 113, 227, 0.25);
+
+  /* Apple Spring Physics Timing Curves */
+  --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring-glide: cubic-bezier(0.25, 1, 0.5, 1);
+  --spring-fast: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography Defaults */
+  --reader-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --reader-font-size: 16px;
+  --reader-line-height: 1.8;
+  --reader-letter-spacing: 0.5px;
+  --reader-para-indent: 2em;
+  --reader-para-spacing: 14px;
+}
+
+/* Color Theme Presets */
+.theme-day-glass {
+  --glass-bg-base: rgba(255, 255, 255, 0.65);
+  --glass-border-color: rgba(255, 255, 255, 0.45);
+  --text-primary: #1a1a1c;
+  --text-secondary: rgba(26, 26, 28, 0.65);
+  --text-muted: rgba(26, 26, 28, 0.4);
+  --accent-color: #0071e3;
+}
+
+.theme-dark-oled {
+  --glass-bg-base: rgba(18, 18, 22, 0.72);
+  --glass-border-color: rgba(255, 255, 255, 0.12);
+  --glass-border-fresnel: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.1) 100%);
+  --glass-inner-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  --text-primary: #e6e6ea;
+  --text-secondary: rgba(230, 230, 234, 0.65);
+  --text-muted: rgba(230, 230, 234, 0.35);
+  --accent-color: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.3);
+}
+
+.theme-parchment {
+  --glass-bg-base: rgba(248, 241, 227, 0.75);
+  --glass-border-color: rgba(210, 195, 170, 0.4);
+  --text-primary: #3d3226;
+  --text-secondary: rgba(61, 50, 38, 0.7);
+  --text-muted: rgba(61, 50, 38, 0.4);
+  --accent-color: #936037;
+  --accent-glow: rgba(147, 96, 55, 0.25);
+}
+
+.theme-hacker {
+  --glass-bg-base: rgba(10, 15, 10, 0.85);
+  --glass-border-color: rgba(34, 197, 94, 0.25);
+  --text-primary: #4ade80;
+  --text-secondary: rgba(74, 222, 128, 0.7);
+  --text-muted: rgba(74, 222, 128, 0.35);
+  --accent-color: #22c55e;
+  --reader-font-family: "Consolas", "Courier New", monospace;
+}
+
+.theme-stealth-pure {
+  --glass-bg-base: rgba(0, 0, 0, 0);
+  --glass-border-color: rgba(0, 0, 0, 0);
+  --glass-inner-glow: none;
+  --glass-shadow: none;
+  --text-primary: rgba(100, 100, 105, 0.75);
+  --text-secondary: rgba(100, 100, 105, 0.5);
+  --text-muted: rgba(100, 100, 105, 0.3);
+  --accent-color: rgba(100, 100, 105, 0.8);
+}
+
+/* Glass Level Overrides */
+.glass-l0 {
+  --glass-bg-base: rgba(255, 255, 255, 0) !important;
+  --glass-border-color: transparent !important;
+  --glass-shadow: none !important;
+  --glass-inner-glow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.glass-l1 {
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+}
+
+.glass-l2 {
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+}
+
+.glass-l3 {
+  backdrop-filter: blur(48px) saturate(190%);
+  -webkit-backdrop-filter: blur(48px) saturate(190%);
+}
+
+/* Base Glass Surfaces */
+.liquid-glass-panel {
+  background: var(--glass-bg-base);
+  box-shadow: var(--glass-shadow);
+  border: 1px solid var(--glass-border-color);
+  box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+  position: relative;
+  transition: background 0.3s var(--spring-smooth), border-color 0.3s var(--spring-smooth), opacity 0.25s var(--spring-smooth);
+}
+
+.liquid-glass-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-border-fresnel);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Liquid Glass Buttons & Interactive Elements */
+.liquid-glass-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.22s var(--spring-smooth);
+  user-select: none;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.liquid-glass-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.liquid-glass-btn:active {
+  transform: translateY(0.5px) scale(0.98);
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.liquid-glass-btn-primary {
+  background: var(--accent-color);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+.liquid-glass-btn-primary:hover {
+  background: var(--accent-color);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 18px var(--accent-glow);
+}
+
+/* Glass Pill Inputs */
+.liquid-glass-input {
+  width: 100%;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--glass-border-color);
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s var(--spring-smooth);
+}
+
+.liquid-glass-input:focus {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.liquid-glass-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Custom Smooth Glass Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 130, 0.2);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 120, 130, 0.45);
+}
+
+/* Apple Spring Animation Utility Classes */
+.animate-spring-in {
+  animation: springIn 0.36s var(--spring-bounce) forwards;
+}
+
+.animate-spring-out {
+  animation: springOut 0.24s var(--spring-fast) forwards;
+}
+
+.animate-drawer-slide {
+  animation: drawerSlide 0.32s var(--spring-smooth) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s var(--spring-smooth) forwards;
+}
+
+@keyframes springIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes springOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+  }
+}
+
+@keyframes drawerSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Window Drag Region */
+.tauri-drag-handle {
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.tauri-no-drag {
+  -webkit-app-region: no-drag;
+}

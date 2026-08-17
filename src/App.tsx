@@ -13,6 +13,7 @@ import { MainReader } from './components/MainReader';
 import { GlassDrawer } from './components/GlassDrawer';
 import { ExcelMode } from './components/ChameleonModes/ExcelMode';
 import { VSCodeMode } from './components/ChameleonModes/VSCodeMode';
+import { IdeaMode } from './components/ChameleonModes/IdeaMode';
 import { StickyNoteMode } from './components/ChameleonModes/StickyNoteMode';
 import { TickerBarMode } from './components/ChameleonModes/TickerBarMode';
 import {
@@ -300,6 +301,17 @@ export function App() {
     return (
       <VSCodeMode
         currentChapter={currentChapter}
+        onExit={() => setChameleonMode('none')}
+        onNextChapter={handleNextChapter}
+        onPrevChapter={handlePrevChapter}
+      />
+    );
+  }
+
+  if (chameleonMode === 'idea') {
+    return (
+      <IdeaMode
+        book={activeBook}
         onExit={() => setChameleonMode('none')}
         onNextChapter={handleNextChapter}
         onPrevChapter={handlePrevChapter}

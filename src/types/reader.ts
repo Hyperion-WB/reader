@@ -107,7 +107,7 @@ export interface ThemeConfig {
   pageMode: 'paginated' | 'scroll';
 }
 
-export type ChameleonModeType = 'none' | 'excel' | 'vscode' | 'stickynote' | 'ticker';
+export type ChameleonModeType = 'none' | 'excel' | 'vscode' | 'idea' | 'stickynote' | 'ticker';
 
 export interface StealthConfig {
   bossKeyShortcut: string; // e.g. "Alt+`"

@@ -1,6 +1,6 @@
-import React from 'react';
 import { ColorThemePreset, ThemeConfig } from '../../types/reader';
 import { Sun, Moon, BookOpen, Terminal, Ghost, Type, Layers, Eye } from 'lucide-react';
+import { FrostedSelect } from '../FrostedSelect';
 
 interface StyleStudioViewProps {
   themeConfig: ThemeConfig;
@@ -109,19 +109,12 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
         </div>
 
         <div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>字体选择</div>
-          <select
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>字体选择</div>
+          <FrostedSelect
+            options={fonts}
             value={themeConfig.fontFamily}
-            onChange={(e) => onUpdateTheme({ ...themeConfig, fontFamily: e.target.value })}
-            className="frosted-input"
-            style={{ padding: '6px 10px', fontSize: '12px' }}
-          >
-            {fonts.map((f, idx) => (
-              <option key={idx} value={f.value} style={{ background: '#222', color: '#fff' }}>
-                {f.label}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => onUpdateTheme({ ...themeConfig, fontFamily: val })}
+          />
         </div>
 
         <div>

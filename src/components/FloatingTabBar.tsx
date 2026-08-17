@@ -247,77 +247,101 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
         </div>
 
         {/* Right: Chameleon Disguise Segmented Switcher & Window Controls */}
-        <div className="tauri-no-drag" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {/* Chameleon Mode Switcher Pills */}
+        <div className="tauri-no-drag" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Chameleon Mode Switcher Pills (Enlarged & Prominent) */}
           <div
             style={{
               display: 'flex',
-              background: 'rgba(0, 0, 0, 0.16)',
-              padding: '2px',
+              background: 'rgba(0, 0, 0, 0.2)',
+              padding: '3px',
               borderRadius: '9999px',
               border: '1px solid var(--glass-border)',
-              gap: '2px'
+              gap: '3px'
             }}
           >
+            {/* Excel Mode */}
             <button
               onClick={() => onChangeChameleonMode(chameleonMode === 'excel' ? 'none' : 'excel')}
               className="frosted-btn"
               title="Excel 表格伪装 [Alt+E]"
               style={{
-                padding: '4px 8px',
+                padding: '6px 11px',
                 borderRadius: '9999px',
                 background: chameleonMode === 'excel' ? '#107c41' : 'transparent',
-                color: chameleonMode === 'excel' ? '#fff' : 'var(--text-secondary)',
+                color: chameleonMode === 'excel' ? '#ffffff' : 'var(--text-secondary)',
                 border: 'none',
-                boxShadow: chameleonMode === 'excel' ? '0 2px 8px rgba(16, 124, 65, 0.4)' : 'none'
+                boxShadow: chameleonMode === 'excel' ? '0 2px 10px rgba(16, 124, 65, 0.5)' : 'none'
               }}
             >
-              <FileSpreadsheet size={13} />
+              <FileSpreadsheet size={16} />
             </button>
+
+            {/* VS Code Mode */}
             <button
               onClick={() => onChangeChameleonMode(chameleonMode === 'vscode' ? 'none' : 'vscode')}
               className="frosted-btn"
               title="VS Code 代码伪装 [Alt+C]"
               style={{
-                padding: '4px 8px',
+                padding: '6px 11px',
                 borderRadius: '9999px',
                 background: chameleonMode === 'vscode' ? '#007acc' : 'transparent',
-                color: chameleonMode === 'vscode' ? '#fff' : 'var(--text-secondary)',
+                color: chameleonMode === 'vscode' ? '#ffffff' : 'var(--text-secondary)',
                 border: 'none',
-                boxShadow: chameleonMode === 'vscode' ? '0 2px 8px rgba(0, 122, 204, 0.4)' : 'none'
+                boxShadow: chameleonMode === 'vscode' ? '0 2px 10px rgba(0, 122, 204, 0.5)' : 'none'
               }}
             >
-              <Code2 size={13} />
+              <Code2 size={16} />
             </button>
+
+            {/* IntelliJ IDEA Mode */}
+            <button
+              onClick={() => onChangeChameleonMode(chameleonMode === 'idea' ? 'none' : 'idea')}
+              className="frosted-btn"
+              title="IntelliJ IDEA 伪装 [Alt+I]"
+              style={{
+                padding: '6px 11px',
+                borderRadius: '9999px',
+                background: chameleonMode === 'idea' ? '#fe2857' : 'transparent',
+                color: chameleonMode === 'idea' ? '#ffffff' : 'var(--text-secondary)',
+                border: 'none',
+                boxShadow: chameleonMode === 'idea' ? '0 2px 10px rgba(254, 40, 87, 0.5)' : 'none'
+              }}
+            >
+              <span style={{ fontWeight: 800, fontSize: '12px', lineHeight: 1 }}>IJ</span>
+            </button>
+
+            {/* Sticky Note Mode */}
             <button
               onClick={() => onChangeChameleonMode(chameleonMode === 'stickynote' ? 'none' : 'stickynote')}
               className="frosted-btn"
               title="便签备忘录伪装"
               style={{
-                padding: '4px 8px',
+                padding: '6px 11px',
                 borderRadius: '9999px',
                 background: chameleonMode === 'stickynote' ? '#d97706' : 'transparent',
-                color: chameleonMode === 'stickynote' ? '#fff' : 'var(--text-secondary)',
+                color: chameleonMode === 'stickynote' ? '#ffffff' : 'var(--text-secondary)',
                 border: 'none',
-                boxShadow: chameleonMode === 'stickynote' ? '0 2px 8px rgba(217, 119, 6, 0.4)' : 'none'
+                boxShadow: chameleonMode === 'stickynote' ? '0 2px 10px rgba(217, 119, 6, 0.5)' : 'none'
               }}
             >
-              <StickyNote size={13} />
+              <StickyNote size={16} />
             </button>
+
+            {/* Ticker Bar Mode */}
             <button
               onClick={() => onChangeChameleonMode(chameleonMode === 'ticker' ? 'none' : 'ticker')}
               className="frosted-btn"
-              title="24px 极简单行状态条 [Alt+1]"
+              title="24px 极简任务栏单行状态条 [Alt+1]"
               style={{
-                padding: '4px 8px',
+                padding: '6px 11px',
                 borderRadius: '9999px',
                 background: chameleonMode === 'ticker' ? 'var(--accent-color)' : 'transparent',
-                color: chameleonMode === 'ticker' ? '#fff' : 'var(--text-secondary)',
+                color: chameleonMode === 'ticker' ? '#ffffff' : 'var(--text-secondary)',
                 border: 'none',
                 boxShadow: chameleonMode === 'ticker' ? 'var(--accent-glow)' : 'none'
               }}
             >
-              <Activity size={13} />
+              <Activity size={16} />
             </button>
           </div>
 

@@ -3,6 +3,8 @@ import { StealthConfig } from '../../types/reader';
 import { StorageService } from '../../services/storageService';
 import { MousePointer, EyeOff, Download, Upload, Monitor, Shield } from 'lucide-react';
 import { windowControls } from '../../services/tauriBridge';
+import { IOSSwitch } from '../IOSSwitch';
+import { FrostedSelect } from '../FrostedSelect';
 
 interface StealthConsoleViewProps {
   stealthConfig: StealthConfig;
@@ -58,48 +60,47 @@ export const StealthConsoleView: React.FC<StealthConsoleViewProps> = ({
     input.click();
   };
 
+  const shortcutOptions = [
+    { label: 'Alt + ` (波浪键，极速推荐)', value: 'Alt+`' },
+    { label: 'Ctrl + Q', value: 'Ctrl+Q' },
+    { label: 'F1', value: 'F1' },
+    { label: 'Alt + X', value: 'Alt+X' }
+  ];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px', overflowY: 'auto', paddingRight: '4px' }}>
-      {/* Boss Key Config */}
-      <div className="frosted-panel" style={{ padding: '14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <EyeOff size={14} />
+      {/* Boss Key Config with FrostedSelect */}
+      <div className="frosted-panel" style={{ padding: '16px', borderRadius: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <EyeOff size={15} style={{ color: 'var(--accent-color)' }} />
           <span>极速老板键 (0ms 瞬时抹除)</span>
         </div>
 
         <div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>全局快捷键</div>
-          <select
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>全局快捷键</div>
+          <FrostedSelect
+            options={shortcutOptions}
             value={stealthConfig.bossKeyShortcut}
-            onChange={(e) => onUpdateStealth({ ...stealthConfig, bossKeyShortcut: e.target.value })}
-            className="frosted-input"
-            style={{ padding: '6px 10px', fontSize: '12px' }}
-          >
-            <option value="Alt+`" style={{ background: '#222', color: '#fff' }}>Alt + ` (波浪键，默认推荐)</option>
-            <option value="Ctrl+Q" style={{ background: '#222', color: '#fff' }}>Ctrl + Q</option>
-            <option value="F1" style={{ background: '#222', color: '#fff' }}>F1</option>
-            <option value="Alt+X" style={{ background: '#222', color: '#fff' }}>Alt + X</option>
-          </select>
+            onChange={(val) => onUpdateStealth({ ...stealthConfig, bossKeyShortcut: val })}
+          />
         </div>
       </div>
 
-      {/* Mouse Proximity Auto-Fade */}
-      <div className="frosted-panel" style={{ padding: '14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* Mouse Proximity Auto-Fade with IOSSwitch */}
+      <div className="frosted-panel" style={{ padding: '16px', borderRadius: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <MousePointer size={14} />
+          <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <MousePointer size={15} style={{ color: 'var(--accent-color)' }} />
             <span>鼠标离开自动淡化隐身</span>
           </div>
-          <input
-            type="checkbox"
+          <IOSSwitch
             checked={stealthConfig.mouseAutoFade}
-            onChange={(e) => onUpdateStealth({ ...stealthConfig, mouseAutoFade: e.target.checked })}
-            style={{ accentColor: 'var(--accent-color)', width: '16px', height: '16px' }}
+            onChange={(val) => onUpdateStealth({ ...stealthConfig, mouseAutoFade: val })}
           />
         </div>
 
         {stealthConfig.mouseAutoFade && (
-          <div>
+          <div className="animate-ios-spring">
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
               <span>离开后最低透明度</span>
               <span>{Math.round(stealthConfig.mouseLeaveOpacity * 100)}%</span>
@@ -117,46 +118,42 @@ export const StealthConsoleView: React.FC<StealthConsoleViewProps> = ({
         )}
       </div>
 
-      {/* Advanced Stealth Toggles */}
-      <div className="frosted-panel" style={{ padding: '14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Shield size={14} />
+      {/* Advanced Stealth Toggles with IOSSwitches */}
+      <div className="frosted-panel" style={{ padding: '16px', borderRadius: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Shield size={15} style={{ color: 'var(--accent-color)' }} />
           <span>高级反侦察选项</span>
         </div>
 
-        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-primary)', cursor: 'pointer' }}>
-          <span>隐藏 Windows 任务栏图标 (无痕运行)</span>
-          <input
-            type="checkbox"
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '12.5px', color: 'var(--text-primary)' }}>隐藏任务栏图标 (无痕后台)</span>
+          <IOSSwitch
             checked={stealthConfig.skipTaskbar}
-            onChange={(e) => handleToggleSkipTaskbar(e.target.checked)}
-            style={{ accentColor: 'var(--accent-color)', width: '15px', height: '15px' }}
+            onChange={(val) => handleToggleSkipTaskbar(val)}
           />
-        </label>
+        </div>
 
-        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-primary)', cursor: 'pointer' }}>
-          <span>鼠标穿透窗口 (可直接点击下层软件)</span>
-          <input
-            type="checkbox"
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '12.5px', color: 'var(--text-primary)' }}>鼠标穿透 (直接点击下层软件)</span>
+          <IOSSwitch
             checked={stealthConfig.clickThrough}
-            onChange={(e) => handleToggleClickThrough(e.target.checked)}
-            style={{ accentColor: 'var(--accent-color)', width: '15px', height: '15px' }}
+            onChange={(val) => handleToggleClickThrough(val)}
           />
-        </label>
+        </div>
       </div>
 
       {/* Backup & Cloud Sync */}
-      <div className="frosted-panel" style={{ padding: '14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Monitor size={14} />
+      <div className="frosted-panel" style={{ padding: '16px', borderRadius: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Monitor size={15} style={{ color: 'var(--accent-color)' }} />
           <span>数据备份与迁移</span>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={handleExportBackup} className="frosted-btn" style={{ flex: 1, padding: '7px 10px', borderRadius: '10px' }}>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
+          <button onClick={handleExportBackup} className="frosted-btn" style={{ flex: 1, padding: '8px 10px', borderRadius: '9999px' }}>
             <Download size={13} />
             <span>导出全部数据</span>
           </button>
-          <button onClick={handleImportBackup} className="frosted-btn" style={{ flex: 1, padding: '7px 10px', borderRadius: '10px' }}>
+          <button onClick={handleImportBackup} className="frosted-btn" style={{ flex: 1, padding: '8px 10px', borderRadius: '9999px' }}>
             <Upload size={13} />
             <span>恢复数据</span>
           </button>

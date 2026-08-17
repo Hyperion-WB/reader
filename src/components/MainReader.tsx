@@ -197,7 +197,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
           fontSize: `${themeConfig.fontSize}px`,
           lineHeight: themeConfig.lineHeight,
           letterSpacing: `${themeConfig.letterSpacing}px`,
-          color: themeConfig.textColor
+          color: 'var(--text-primary)'
         }}
       >
         {/* Chapter Title */}
@@ -208,7 +208,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
             marginBottom: '20px',
             color: 'var(--text-primary)',
             textAlign: 'center',
-            borderBottom: '1px solid var(--glass-border-color)',
+            borderBottom: '1px solid var(--glass-border)',
             paddingBottom: '12px'
           }}
         >

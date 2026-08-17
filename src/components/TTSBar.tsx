@@ -1,5 +1,6 @@
 import React from 'react';
 import { Play, Pause, Square, Volume2 } from 'lucide-react';
+import { FrostedSelect } from './FrostedSelect';
 
 interface TTSBarProps {
   isPlaying: boolean;
@@ -18,6 +19,14 @@ export const TTSBar: React.FC<TTSBarProps> = ({
   rate,
   onChangeRate
 }) => {
+  const rateOptions = [
+    { label: '0.8x 慢速', value: 0.8 },
+    { label: '1.0x 原速', value: 1.0 },
+    { label: '1.25x 适中', value: 1.25 },
+    { label: '1.5x 快速', value: 1.5 },
+    { label: '2.0x 极速', value: 2.0 }
+  ];
+
   return (
     <div
       className="ios-floating-bar animate-ios-spring tauri-no-drag"
@@ -50,19 +59,15 @@ export const TTSBar: React.FC<TTSBarProps> = ({
         <Square size={12} />
       </button>
 
-      {/* Speed Selector */}
-      <select
-        value={rate}
-        onChange={(e) => onChangeRate(Number(e.target.value))}
-        className="frosted-input"
-        style={{ padding: '2px 6px', fontSize: '11px', width: '65px', borderRadius: '8px' }}
-      >
-        <option value={0.8} style={{ background: '#222', color: '#fff' }}>0.8x</option>
-        <option value={1.0} style={{ background: '#222', color: '#fff' }}>1.0x</option>
-        <option value={1.25} style={{ background: '#222', color: '#fff' }}>1.25x</option>
-        <option value={1.5} style={{ background: '#222', color: '#fff' }}>1.5x</option>
-        <option value={2.0} style={{ background: '#222', color: '#fff' }}>2.0x</option>
-      </select>
+      {/* Frosted Speed Selector */}
+      <div style={{ width: '100px' }}>
+        <FrostedSelect
+          options={rateOptions}
+          value={rate}
+          onChange={(val) => onChangeRate(Number(val))}
+          width={100}
+        />
+      </div>
     </div>
   );
 };

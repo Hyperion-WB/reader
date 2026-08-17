@@ -14,6 +14,8 @@ import { GlassDrawer } from './components/GlassDrawer';
 import { ExcelMode } from './components/ChameleonModes/ExcelMode';
 import { VSCodeMode } from './components/ChameleonModes/VSCodeMode';
 import { IdeaMode } from './components/ChameleonModes/IdeaMode';
+import { WordMode } from './components/ChameleonModes/WordMode';
+import { PdfMode } from './components/ChameleonModes/PdfMode';
 import { StickyNoteMode } from './components/ChameleonModes/StickyNoteMode';
 import { TickerBarMode } from './components/ChameleonModes/TickerBarMode';
 import {
@@ -30,7 +32,7 @@ import { CuteAppIcon } from './components/CuteAppIcon';
 import { WindowResizeHandles } from './components/WindowResizeHandles';
 import './styles/glass.css';
 
-export function App() {
+export default function App() {
   // Main State
   const [books, setBooks] = useState<Book[]>(() => StorageService.getBooks());
   const [activeBookId, setActiveBookId] = useState<string | null>(() => {
@@ -43,38 +45,41 @@ export function App() {
     const saved = StorageService.getOpenTabs();
     if (saved.length > 0) return saved;
     const initialBooks = StorageService.getBooks();
-    return initialBooks.length > 0 ? initialBooks.map((b) => b.id) : [];
+    return initialBooks.length > 0 ? [initialBooks[0].id] : [];
   });
-  const [sources, setSources] = useState<BookSource[]>(() => StorageService.getSources());
-  const [themeConfig, setThemeConfig] = useState<ThemeConfig>(() => StorageService.getThemeConfig());
-  const [stealthConfig, setStealthConfig] = useState<StealthConfig>(() => StorageService.getStealthConfig());
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>(() => StorageService.getBookmarks());
 
-  // UI Control State
+  const [themeConfig, setThemeConfig] = useState<ThemeConfig>(() => StorageService.getThemeConfig());
+  const [stealthConfig, setStealthConfig] = useState<StealthConfig>(() =>
+    StorageService.getStealthConfig()
+  );
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>(() => StorageService.getBookmarks());
+  const [sources, setSources] = useState<BookSource[]>(() => StorageService.getSources());
+
+  // UI Transient States
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [chameleonMode, setChameleonMode] = useState<ChameleonModeType>('none');
   const [isMouseFaded, setIsMouseFaded] = useState(false);
-  const [alwaysOnTop, setAlwaysOnTop] = useState(true);
+  const [isBossHidden, setIsBossHidden] = useState(false);
 
+  // Active Book computation
   const activeBook = books.find((b) => b.id === activeBookId) || null;
-  const currentChapter = activeBook?.chapters[activeBook.currentChapterIndex];
+  const currentChapter =
+    activeBook && activeBook.chapters[activeBook.currentChapterIndex]
+      ? activeBook.chapters[activeBook.currentChapterIndex]
+      : undefined;
 
-  // Auto-sync State to LocalStorage
+  // Sync to Storage on changes
   useEffect(() => {
     StorageService.saveBooks(books);
   }, [books]);
 
   useEffect(() => {
-    StorageService.saveActiveBookId(activeBookId);
+    if (activeBookId) StorageService.saveActiveBookId(activeBookId);
   }, [activeBookId]);
 
   useEffect(() => {
     StorageService.saveOpenTabs(openTabIds);
   }, [openTabIds]);
-
-  useEffect(() => {
-    StorageService.saveSources(sources);
-  }, [sources]);
 
   useEffect(() => {
     StorageService.saveThemeConfig(themeConfig);
@@ -88,24 +93,36 @@ export function App() {
     StorageService.saveBookmarks(bookmarks);
   }, [bookmarks]);
 
-  // Boss Key Trigger Action
+  useEffect(() => {
+    StorageService.saveSources(sources);
+  }, [sources]);
+
+  // Global Boss Key Handler
   const handleBossKeyTrigger = useCallback(async () => {
     if (isTauri()) {
-      await windowControls.hide();
+      if (isBossHidden) {
+        await windowControls.show();
+        setIsBossHidden(false);
+      } else {
+        await windowControls.hide();
+        setIsBossHidden(true);
+      }
     } else {
-      setChameleonMode((prev) => (prev === 'excel' ? 'none' : 'excel'));
+      setIsBossHidden((prev) => !prev);
     }
-  }, []);
+  }, [isBossHidden]);
 
-  // Register Global Boss Key Shortcut in Tauri
+  // Register Global Boss Key in Desktop Mode
   useEffect(() => {
-    registerBossKeyShortcut(stealthConfig.bossKeyShortcut, handleBossKeyTrigger);
+    if (stealthConfig.bossKeyShortcut) {
+      registerBossKeyShortcut(stealthConfig.bossKeyShortcut, handleBossKeyTrigger);
+    }
   }, [stealthConfig.bossKeyShortcut, handleBossKeyTrigger]);
 
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // Toggle Drawer on Alt+M
+      // Toggle Menu Drawer on Alt+M
       if (e.altKey && (e.key === 'm' || e.key === 'M')) {
         e.preventDefault();
         setIsDrawerOpen((prev) => !prev);
@@ -115,10 +132,20 @@ export function App() {
         e.preventDefault();
         setChameleonMode((prev) => (prev === 'excel' ? 'none' : 'excel'));
       }
+      // Toggle Word Camouflage on Alt+W
+      else if (e.altKey && (e.key === 'w' || e.key === 'W')) {
+        e.preventDefault();
+        setChameleonMode((prev) => (prev === 'word' ? 'none' : 'word'));
+      }
       // Toggle VS Code Camouflage on Alt+C
       else if (e.altKey && (e.key === 'c' || e.key === 'C')) {
         e.preventDefault();
         setChameleonMode((prev) => (prev === 'vscode' ? 'none' : 'vscode'));
+      }
+      // Toggle IDEA Camouflage on Alt+I
+      else if (e.altKey && (e.key === 'i' || e.key === 'I')) {
+        e.preventDefault();
+        setChameleonMode((prev) => (prev === 'idea' ? 'none' : 'idea'));
       }
       // Toggle Ticker Bar on Alt+1
       else if (e.altKey && e.key === '1') {
@@ -161,31 +188,44 @@ export function App() {
 
   const handleCloseTab = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const remaining = openTabIds.filter((tabId) => tabId !== id);
-    setOpenTabIds(remaining);
+    const newTabs = openTabIds.filter((tabId) => tabId !== id);
+    setOpenTabIds(newTabs);
     if (activeBookId === id) {
-      setActiveBookId(remaining.length > 0 ? remaining[remaining.length - 1] : null);
+      if (newTabs.length > 0) {
+        setActiveBookId(newTabs[newTabs.length - 1]);
+      } else {
+        setActiveBookId(null);
+      }
     }
   };
 
   const handleAddBookToShelf = (newBook: Book) => {
     setBooks((prev) => {
-      const exists = prev.find((b) => b.id === newBook.id || b.title === newBook.title);
-      if (exists) return prev;
+      const exists = prev.find((b) => b.id === newBook.id || (b.title === newBook.title && b.author === newBook.author));
+      if (exists) {
+        setActiveBookId(exists.id);
+        if (!openTabIds.includes(exists.id)) {
+          setOpenTabIds((tabs) => [...tabs, exists.id]);
+        }
+        return prev;
+      }
+      setActiveBookId(newBook.id);
+      if (!openTabIds.includes(newBook.id)) {
+        setOpenTabIds((tabs) => [...tabs, newBook.id]);
+      }
       return [newBook, ...prev];
     });
-    handleSelectBook(newBook.id);
   };
 
   const handleDeleteBook = (id: string) => {
     setBooks((prev) => prev.filter((b) => b.id !== id));
     setOpenTabIds((prev) => prev.filter((tabId) => tabId !== id));
     if (activeBookId === id) {
-      setActiveBookId(null);
+      const remaining = openTabIds.filter((tabId) => tabId !== id);
+      setActiveBookId(remaining.length > 0 ? remaining[0] : null);
     }
   };
 
-  // Chapter Progress & Navigation
   const handleUpdateBookProgress = (chapterIndex: number, progressPercent: number) => {
     if (!activeBookId) return;
     setBooks((prev) =>
@@ -204,15 +244,17 @@ export function App() {
 
   const handleNextChapter = () => {
     if (!activeBook) return;
-    if (activeBook.currentChapterIndex < activeBook.chapters.length - 1) {
-      handleUpdateBookProgress(activeBook.currentChapterIndex + 1, 0);
+    const nextIdx = activeBook.currentChapterIndex + 1;
+    if (nextIdx < activeBook.chapters.length) {
+      handleUpdateBookProgress(nextIdx, 0);
     }
   };
 
   const handlePrevChapter = () => {
     if (!activeBook) return;
-    if (activeBook.currentChapterIndex > 0) {
-      handleUpdateBookProgress(activeBook.currentChapterIndex - 1, 0);
+    const prevIdx = activeBook.currentChapterIndex - 1;
+    if (prevIdx >= 0) {
+      handleUpdateBookProgress(prevIdx, 0);
     }
   };
 
@@ -258,8 +300,8 @@ export function App() {
       reader.onload = async (event) => {
         const buffer = event.target?.result as ArrayBuffer;
         if (buffer) {
-          const book = await parseEpubFile(file.name, buffer);
-          handleAddBookToShelf(book);
+          const imported = await parseEpubFile(file.name, buffer);
+          handleAddBookToShelf(imported);
           setIsDrawerOpen(false);
         }
       };
@@ -268,16 +310,16 @@ export function App() {
       reader.onload = (event) => {
         const text = event.target?.result as string;
         if (text) {
-          const book = parseTxtFile(file.name, text);
-          handleAddBookToShelf(book);
+          const imported = parseTxtFile(file.name, text);
+          handleAddBookToShelf(imported);
           setIsDrawerOpen(false);
         }
       };
-      reader.readAsText(file);
+      reader.readAsText(file, 'utf-8');
     }
   };
 
-  // Mouse Auto-Fade Handlers
+  // Mouse Auto-Fade on Hover Leave (Stealth Feature)
   const handleWindowMouseEnter = () => {
     if (stealthConfig.mouseAutoFade) {
       setIsMouseFaded(false);
@@ -290,10 +332,36 @@ export function App() {
     }
   };
 
-  // Render Chameleon Modes
+  // If Boss Key is Triggered in Web Fallback
+  if (isBossHidden) {
+    return (
+      <div
+        onClick={handleBossKeyTrigger}
+        style={{
+          width: '100vw',
+          height: '100vh',
+          background: 'transparent',
+          cursor: 'default'
+        }}
+      />
+    );
+  }
+
+  // Chameleon Fullscreen Modes
   if (chameleonMode === 'excel') {
     return (
       <ExcelMode
+        currentChapter={currentChapter}
+        onExit={() => setChameleonMode('none')}
+        onNextChapter={handleNextChapter}
+        onPrevChapter={handlePrevChapter}
+      />
+    );
+  }
+
+  if (chameleonMode === 'word') {
+    return (
+      <WordMode
         currentChapter={currentChapter}
         onExit={() => setChameleonMode('none')}
         onNextChapter={handleNextChapter}
@@ -317,6 +385,17 @@ export function App() {
     return (
       <IdeaMode
         book={activeBook}
+        onExit={() => setChameleonMode('none')}
+        onNextChapter={handleNextChapter}
+        onPrevChapter={handlePrevChapter}
+      />
+    );
+  }
+
+  if (chameleonMode === 'pdf') {
+    return (
+      <PdfMode
+        currentChapter={currentChapter}
         onExit={() => setChameleonMode('none')}
         onNextChapter={handleNextChapter}
         onPrevChapter={handlePrevChapter}
@@ -362,6 +441,9 @@ export function App() {
         flexDirection: 'column',
         position: 'relative',
         overflow: 'hidden',
+        borderRadius: '16px',
+        border: '1px solid var(--glass-border)',
+        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.35)',
         background: 'var(--bg-app)',
         backdropFilter: 'blur(var(--glass-blur)) saturate(var(--glass-saturate))',
         WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(var(--glass-saturate))',
@@ -382,181 +464,99 @@ export function App() {
         style={{ display: 'none' }}
       />
 
-      {/* Dynamic Liquid Glass Tab Bar */}
+      {/* Dynamic Liquid Glass Tab Bar with Android Drag Handle */}
       <FloatingTabBar
         books={books}
         openTabIds={openTabIds}
         activeBookId={activeBookId}
         onSelectBook={handleSelectBook}
         onCloseTab={handleCloseTab}
-        onOpenNewBook={() => setIsDrawerOpen(true)}
+        onOpenNewBook={() => {
+          if (isTauri()) {
+            handleImportLocalFile();
+          } else {
+            document.getElementById('html5-file-input')?.click();
+          }
+        }}
         onToggleDrawer={() => setIsDrawerOpen((prev) => !prev)}
         chameleonMode={chameleonMode}
         onChangeChameleonMode={setChameleonMode}
-        alwaysOnTop={alwaysOnTop}
-        onToggleAlwaysOnTop={async () => {
-          const next = !alwaysOnTop;
-          setAlwaysOnTop(next);
-          await windowControls.setAlwaysOnTop(next);
+        alwaysOnTop={stealthConfig.alwaysOnTop}
+        onToggleAlwaysOnTop={() => {
+          const newVal = !stealthConfig.alwaysOnTop;
+          setStealthConfig((prev) => ({ ...prev, alwaysOnTop: newVal }));
+          windowControls.setAlwaysOnTop(newVal);
         }}
         onTriggerBossKey={handleBossKeyTrigger}
       />
 
-      {/* Main Canvas: Reader or Welcome Screen */}
+      {/* Main Reading Workspace or Empty Welcome State */}
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
         {activeBook ? (
           <MainReader
-            key={activeBook.id}
             book={activeBook}
             sources={sources}
+            onUpdateBookProgress={handleUpdateBookProgress}
+            onPrevChapter={handlePrevChapter}
+            onNextChapter={handleNextChapter}
+            onJumpChapter={handleJumpChapter}
             themeConfig={themeConfig}
             onUpdateTheme={setThemeConfig}
-            onUpdateBookProgress={handleUpdateBookProgress}
             onAddBookmark={(bm) => setBookmarks((prev) => [bm, ...prev])}
-            onNextChapter={handleNextChapter}
-            onPrevChapter={handlePrevChapter}
-            onJumpChapter={handleJumpChapter}
           />
         ) : (
           <div
             style={{
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               height: '100%',
-              padding: '20px'
+              gap: '18px',
+              padding: '24px',
+              textAlign: 'center'
             }}
           >
-            <div
-              className="frosted-panel animate-ios-spring"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '36px 44px',
-                borderRadius: '24px',
-                textAlign: 'center',
-                maxWidth: '460px',
-                width: '100%',
-                gap: '18px'
-              }}
-            >
-              {/* Cute Mascot App Icon */}
-              <CuteAppIcon size={84} style={{ marginBottom: '4px' }} />
-
-              {/* Title & Subtitle with Crisp Contrast */}
-              <div>
-                <div
-                  style={{
-                    fontSize: '22px',
-                    fontWeight: 700,
-                    color: 'var(--text-primary)',
-                    letterSpacing: '-0.4px'
-                  }}
-                >
-                  LiquidReader
-                </div>
-                <div
-                  style={{
-                    fontSize: '13px',
-                    color: 'var(--text-secondary)',
-                    marginTop: '6px',
-                    lineHeight: 1.5
-                  }}
-                >
-                  Windows 通透磨砂风 · 摸鱼沉浸双模小说阅读器
-                </div>
+            <CuteAppIcon size={80} />
+            <div>
+              <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                欢迎使用 LiquidReader
               </div>
-
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '12px', width: '100%', marginTop: '6px' }}>
-                <button
-                  onClick={() => {
-                    if (isTauri()) {
-                      handleImportLocalFile();
-                    } else {
-                      document.getElementById('html5-file-input')?.click();
-                    }
-                  }}
-                  className="frosted-btn frosted-btn-primary"
-                  style={{ flex: 1, padding: '11px 18px', fontSize: '13.5px', borderRadius: '9999px' }}
-                >
-                  <Upload size={16} />
-                  <span>导入本地 (TXT / EPUB)</span>
-                </button>
-
-                <button
-                  onClick={() => setIsDrawerOpen(true)}
-                  className="frosted-btn"
-                  style={{ flex: 1, padding: '11px 18px', fontSize: '13.5px', borderRadius: '9999px' }}
-                >
-                  <Plus size={16} />
-                  <span>全网书源搜书</span>
-                </button>
+              <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', maxWidth: '340px', lineHeight: '1.5' }}>
+                通透磨砂玻璃质感 · 苹果级物理动效 · 全网 Legado 聚合搜书 · 多维办公伪装矩阵
               </div>
+            </div>
 
-              {/* Shortcut Cheat Badges */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  marginTop: '8px'
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  if (isTauri()) {
+                    handleImportLocalFile();
+                  } else {
+                    document.getElementById('html5-file-input')?.click();
+                  }
                 }}
+                className="frosted-btn frosted-btn-primary"
+                style={{ padding: '8px 16px', fontSize: '13px' }}
               >
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: 'var(--text-muted)',
-                    background: 'rgba(0,0,0,0.12)',
-                    padding: '3px 8px',
-                    borderRadius: '6px'
-                  }}
-                >
-                  老板键: Alt+`
-                </span>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: 'var(--text-muted)',
-                    background: 'rgba(0,0,0,0.12)',
-                    padding: '3px 8px',
-                    borderRadius: '6px'
-                  }}
-                >
-                  Excel伪装: Alt+E
-                </span>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: 'var(--text-muted)',
-                    background: 'rgba(0,0,0,0.12)',
-                    padding: '3px 8px',
-                    borderRadius: '6px'
-                  }}
-                >
-                  VSCode伪装: Alt+C
-                </span>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: 'var(--text-muted)',
-                    background: 'rgba(0,0,0,0.12)',
-                    padding: '3px 8px',
-                    borderRadius: '6px'
-                  }}
-                >
-                  单行极简: Alt+1
-                </span>
-              </div>
+                <Upload size={14} />
+                <span>导入本地小说 (TXT / EPUB)</span>
+              </button>
+
+              <button
+                onClick={() => setIsDrawerOpen(true)}
+                className="frosted-btn"
+                style={{ padding: '8px 14px', fontSize: '13px' }}
+              >
+                <Plus size={14} />
+                <span>全网搜书 & 书源</span>
+              </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Liquid Glass Side Drawer */}
+      {/* Glassmorphic Side Drawer */}
       <GlassDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
@@ -567,36 +567,31 @@ export function App() {
         sources={sources}
         themeConfig={themeConfig}
         stealthConfig={stealthConfig}
-        onSelectBook={handleSelectBook}
+        onSelectBook={(bookId: string) => {
+          handleSelectBook(bookId);
+          setIsDrawerOpen(false);
+        }}
         onDeleteBook={handleDeleteBook}
-        onImportLocal={() => {
-          if (isTauri()) {
-            handleImportLocalFile();
+        onImportLocal={handleImportLocalFile}
+        onSelectChapter={(chapterIndex: number) => {
+          handleJumpChapter(chapterIndex);
+          setIsDrawerOpen(false);
+        }}
+        onSelectBookmark={(bm: Bookmark) => {
+          if (bm.bookId === activeBookId) {
+            handleJumpChapter(bm.chapterIndex);
+            setIsDrawerOpen(false);
           } else {
-            document.getElementById('html5-file-input')?.click();
-          }
-        }}
-        onSelectChapter={handleJumpChapter}
-        onSelectBookmark={(bm) => {
-          if (bm.bookId !== activeBookId) {
             handleSelectBook(bm.bookId);
+            setTimeout(() => handleJumpChapter(bm.chapterIndex), 100);
+            setIsDrawerOpen(false);
           }
-          handleJumpChapter(bm.chapterIndex);
         }}
-        onDeleteBookmark={(bmId) => {
-          const updated = bookmarks.filter((b) => b.id !== bmId);
-          setBookmarks(updated);
-          StorageService.saveBookmarks(updated);
-        }}
+        onDeleteBookmark={(id: string) => setBookmarks((prev) => prev.filter((b) => b.id !== id))}
         onAddBookToShelf={handleAddBookToShelf}
         onUpdateSources={setSources}
         onUpdateTheme={setThemeConfig}
         onUpdateStealth={setStealthConfig}
-        onUpdateBookCover={(bookId, cover) => {
-          const updated = books.map((b) => (b.id === bookId ? { ...b, cover } : b));
-          setBooks(updated);
-          StorageService.saveBooks(updated);
-        }}
         onReloadAllData={() => {
           setBooks(StorageService.getBooks());
           setSources(StorageService.getSources());
@@ -604,9 +599,10 @@ export function App() {
           setStealthConfig(StorageService.getStealthConfig());
           setBookmarks(StorageService.getBookmarks());
         }}
+        onUpdateBookCover={(bookId: string, cover: string) => {
+          setBooks((prev) => prev.map((b) => (b.id === bookId ? { ...b, cover } : b)));
+        }}
       />
     </div>
   );
 }
-
-export default App;

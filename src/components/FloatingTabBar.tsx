@@ -11,7 +11,9 @@ import {
   Activity,
   Pin,
   EyeOff,
-  BookOpen
+  BookOpen,
+  Shield,
+  ChevronDown
 } from 'lucide-react';
 import { Book, ChameleonModeType } from '../types/reader';
 import { windowControls } from '../services/tauriBridge';
@@ -54,6 +56,10 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
     opacity: 0
   });
 
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [showDisguiseMenu, setShowDisguiseMenu] = useState(false);
+  const disguiseMenuRef = useRef<HTMLDivElement>(null);
+
   const openBooks = openTabIds
     .map((id) => books.find((b) => b.id === id))
     .filter((b): b is Book => b !== undefined);
@@ -78,19 +84,33 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
 
   useEffect(() => {
     updateTabIndicator();
-    const timer = setTimeout(updateTabIndicator, 40);
-    window.addEventListener('resize', updateTabIndicator);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', updateTabIndicator);
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      updateTabIndicator();
     };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [activeBookId, openTabIds, openBooks.length]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (disguiseMenuRef.current && !disguiseMenuRef.current.contains(e.target as Node)) {
+        setShowDisguiseMenu(false);
+      }
+    };
+    if (showDisguiseMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDisguiseMenu]);
+
+  const isCompactView = windowWidth < 740;
 
   return (
     <div
       className="tauri-drag-handle"
       style={{
-        padding: '6px 10px 0 10px',
+        padding: '6px 8px 0 8px',
         width: '100%',
         boxSizing: 'border-box',
         zIndex: 1000
@@ -105,28 +125,29 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
           height: '42px',
           padding: '0 8px',
           gap: '6px',
-          overflow: 'hidden'
+          overflow: 'visible',
+          position: 'relative'
         }}
       >
         {/* Left: Cute App Logo, Drawer Menu & Boss Key */}
         <div className="tauri-no-drag" style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-          <CuteAppIcon size={26} style={{ marginRight: '2px', cursor: 'pointer' }} />
-          
+          <CuteAppIcon size={26} style={{ cursor: 'pointer' }} />
+
           <button
             onClick={onToggleDrawer}
             className="frosted-btn"
             title="控制中心 (书架/目录/书签/搜书/设置) [Alt+M]"
-            style={{ padding: '5px 10px', borderRadius: '9999px' }}
+            style={{ padding: '5px 9px', borderRadius: '9999px', color: 'var(--text-primary)' }}
           >
             <Menu size={14} />
-            <span style={{ fontSize: '12px', fontWeight: 600 }}>菜单</span>
+            {!isCompactView && <span style={{ fontSize: '12px', fontWeight: 600 }}>菜单</span>}
           </button>
 
           <button
             onClick={onTriggerBossKey}
             className="frosted-btn"
             title="老板键瞬隐 [Alt+`]"
-            style={{ padding: '5px 7px', borderRadius: '9999px' }}
+            style={{ padding: '5px 7px', borderRadius: '9999px', color: 'var(--text-primary)' }}
           >
             <EyeOff size={13} />
           </button>
@@ -147,7 +168,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
             border: '1px solid var(--glass-border)',
             overflowX: 'auto',
             flex: '1 1 auto',
-            minWidth: '60px',
+            minWidth: '40px',
             maxWidth: '100%',
             scrollbarWidth: 'none'
           }}
@@ -191,7 +212,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                   background: 'transparent',
                   border: 'none',
                   boxShadow: 'none',
-                  maxWidth: 'clamp(70px, 15vw, 150px)',
+                  maxWidth: 'clamp(60px, 14vw, 150px)',
                   padding: '4px 8px',
                   fontSize: '12px'
                 }}
@@ -216,8 +237,8 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                     height: '14px',
                     borderRadius: '50%',
                     marginLeft: '2px',
-                    opacity: isActive ? 0.7 : 0.4,
-                    transition: 'all 0.2s ease'
+                    opacity: isActive ? 0.8 : 0.4,
+                    transition: 'all 0.15s ease'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.opacity = '1';
@@ -225,7 +246,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                     e.currentTarget.style.color = '#ef4444';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.opacity = isActive ? '0.7' : '0.4';
+                    e.currentTarget.style.opacity = isActive ? '0.8' : '0.4';
                     e.currentTarget.style.background = 'transparent';
                     e.currentTarget.style.color = 'inherit';
                   }}
@@ -244,7 +265,8 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
               borderRadius: '9999px',
               border: 'none',
               background: 'transparent',
-              flexShrink: 0
+              flexShrink: 0,
+              color: 'var(--text-secondary)'
             }}
             title="打开新书"
           >
@@ -252,98 +274,232 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
           </button>
         </div>
 
-        {/* Right: Camouflage Modes Pill & Window Controls */}
+        {/* Right: Camouflage Disguises & Window Controls */}
         <div className="tauri-no-drag" style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-          {/* Chameleon Disguise Group */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              background: 'rgba(0, 0, 0, 0.16)',
-              padding: '2px',
-              borderRadius: '9999px',
-              border: '1px solid var(--glass-border)',
-              gap: '2px'
-            }}
-          >
-            <button
-              onClick={() => onChangeChameleonMode(chameleonMode === 'excel' ? 'none' : 'excel')}
-              className="frosted-btn"
-              title="Excel 表格伪装 [Alt+E]"
-              style={{
-                padding: '4px 6px',
-                borderRadius: '9999px',
-                background: chameleonMode === 'excel' ? '#107c41' : 'transparent',
-                color: chameleonMode === 'excel' ? '#ffffff' : 'var(--text-secondary)',
-                border: 'none'
-              }}
-            >
-              <FileSpreadsheet size={13} />
-            </button>
+          {/* Responsive Disguise Switcher */}
+          {isCompactView ? (
+            <div ref={disguiseMenuRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowDisguiseMenu(!showDisguiseMenu)}
+                className="frosted-btn"
+                title="摸鱼伪装模式菜单"
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '9999px',
+                  background: chameleonMode !== 'none' ? 'var(--accent-color)' : 'transparent',
+                  color: chameleonMode !== 'none' ? '#ffffff' : 'var(--text-primary)',
+                  fontSize: '11px',
+                  gap: '4px'
+                }}
+              >
+                <Shield size={13} />
+                <ChevronDown size={11} />
+              </button>
 
-            <button
-              onClick={() => onChangeChameleonMode(chameleonMode === 'vscode' ? 'none' : 'vscode')}
-              className="frosted-btn"
-              title="VS Code 代码伪装 [Alt+C]"
-              style={{
-                padding: '4px 6px',
-                borderRadius: '9999px',
-                background: chameleonMode === 'vscode' ? '#007acc' : 'transparent',
-                color: chameleonMode === 'vscode' ? '#ffffff' : 'var(--text-secondary)',
-                border: 'none'
-              }}
-            >
-              <Code2 size={13} />
-            </button>
+              {/* Popover Menu for Camouflage on Small Windows */}
+              {showDisguiseMenu && (
+                <div
+                  className="frosted-panel animate-ios-spring"
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    padding: '6px',
+                    borderRadius: '14px',
+                    minWidth: '140px',
+                    zIndex: 99999,
+                    boxShadow: '0 12px 32px rgba(0,0,0,0.35)',
+                    background: 'var(--bg-app)',
+                    backdropFilter: 'blur(32px)'
+                  }}
+                >
+                  <button
+                    onClick={() => {
+                      onChangeChameleonMode(chameleonMode === 'excel' ? 'none' : 'excel');
+                      setShowDisguiseMenu(false);
+                    }}
+                    className="frosted-btn"
+                    style={{
+                      justifyContent: 'flex-start',
+                      padding: '6px 10px',
+                      fontSize: '11.5px',
+                      background: chameleonMode === 'excel' ? '#107c41' : 'transparent',
+                      color: chameleonMode === 'excel' ? '#fff' : 'var(--text-primary)'
+                    }}
+                  >
+                    <FileSpreadsheet size={13} />
+                    <span>Excel 表格 (Alt+E)</span>
+                  </button>
 
-            <button
-              onClick={() => onChangeChameleonMode(chameleonMode === 'idea' ? 'none' : 'idea')}
-              className="frosted-btn"
-              title="IntelliJ IDEA 伪装 [Alt+I]"
-              style={{
-                padding: '4px 6px',
-                borderRadius: '9999px',
-                background: chameleonMode === 'idea' ? '#fe315d' : 'transparent',
-                color: chameleonMode === 'idea' ? '#ffffff' : 'var(--text-secondary)',
-                border: 'none',
-                fontWeight: 800,
-                fontSize: '11px',
-                lineHeight: 1
-              }}
-            >
-              <span>IJ</span>
-            </button>
+                  <button
+                    onClick={() => {
+                      onChangeChameleonMode(chameleonMode === 'vscode' ? 'none' : 'vscode');
+                      setShowDisguiseMenu(false);
+                    }}
+                    className="frosted-btn"
+                    style={{
+                      justifyContent: 'flex-start',
+                      padding: '6px 10px',
+                      fontSize: '11.5px',
+                      background: chameleonMode === 'vscode' ? '#007acc' : 'transparent',
+                      color: chameleonMode === 'vscode' ? '#fff' : 'var(--text-primary)'
+                    }}
+                  >
+                    <Code2 size={13} />
+                    <span>VS Code 代码 (Alt+C)</span>
+                  </button>
 
-            <button
-              onClick={() => onChangeChameleonMode(chameleonMode === 'stickynote' ? 'none' : 'stickynote')}
-              className="frosted-btn"
-              title="便签条伪装"
-              style={{
-                padding: '4px 6px',
-                borderRadius: '9999px',
-                background: chameleonMode === 'stickynote' ? '#eab308' : 'transparent',
-                color: chameleonMode === 'stickynote' ? '#ffffff' : 'var(--text-secondary)',
-                border: 'none'
-              }}
-            >
-              <StickyNote size={13} />
-            </button>
+                  <button
+                    onClick={() => {
+                      onChangeChameleonMode(chameleonMode === 'idea' ? 'none' : 'idea');
+                      setShowDisguiseMenu(false);
+                    }}
+                    className="frosted-btn"
+                    style={{
+                      justifyContent: 'flex-start',
+                      padding: '6px 10px',
+                      fontSize: '11.5px',
+                      background: chameleonMode === 'idea' ? '#fe315d' : 'transparent',
+                      color: chameleonMode === 'idea' ? '#fff' : 'var(--text-primary)'
+                    }}
+                  >
+                    <span style={{ fontWeight: 800, fontSize: '11px' }}>IJ</span>
+                    <span>IntelliJ IDEA (Alt+I)</span>
+                  </button>
 
-            <button
-              onClick={() => onChangeChameleonMode(chameleonMode === 'ticker' ? 'none' : 'ticker')}
-              className="frosted-btn"
-              title="24px 极简单行滚动条 [Alt+1]"
+                  <button
+                    onClick={() => {
+                      onChangeChameleonMode(chameleonMode === 'stickynote' ? 'none' : 'stickynote');
+                      setShowDisguiseMenu(false);
+                    }}
+                    className="frosted-btn"
+                    style={{
+                      justifyContent: 'flex-start',
+                      padding: '6px 10px',
+                      fontSize: '11.5px',
+                      background: chameleonMode === 'stickynote' ? '#eab308' : 'transparent',
+                      color: chameleonMode === 'stickynote' ? '#fff' : 'var(--text-primary)'
+                    }}
+                  >
+                    <StickyNote size={13} />
+                    <span>便签小窗模式</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onChangeChameleonMode(chameleonMode === 'ticker' ? 'none' : 'ticker');
+                      setShowDisguiseMenu(false);
+                    }}
+                    className="frosted-btn"
+                    style={{
+                      justifyContent: 'flex-start',
+                      padding: '6px 10px',
+                      fontSize: '11.5px',
+                      background: chameleonMode === 'ticker' ? 'var(--accent-color)' : 'transparent',
+                      color: chameleonMode === 'ticker' ? '#fff' : 'var(--text-primary)'
+                    }}
+                  >
+                    <Activity size={13} />
+                    <span>24px 单行滚动 (Alt+1)</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Inline Disguise Buttons for Wide Screens */
+            <div
               style={{
-                padding: '4px 6px',
+                display: 'flex',
+                alignItems: 'center',
+                background: 'rgba(0, 0, 0, 0.16)',
+                padding: '2px',
                 borderRadius: '9999px',
-                background: chameleonMode === 'ticker' ? 'var(--accent-color)' : 'transparent',
-                color: chameleonMode === 'ticker' ? '#ffffff' : 'var(--text-secondary)',
-                border: 'none'
+                border: '1px solid var(--glass-border)',
+                gap: '2px'
               }}
             >
-              <Activity size={13} />
-            </button>
-          </div>
+              <button
+                onClick={() => onChangeChameleonMode(chameleonMode === 'excel' ? 'none' : 'excel')}
+                className="frosted-btn"
+                title="Excel 表格伪装 [Alt+E]"
+                style={{
+                  padding: '4px 6px',
+                  borderRadius: '9999px',
+                  background: chameleonMode === 'excel' ? '#107c41' : 'transparent',
+                  color: chameleonMode === 'excel' ? '#ffffff' : 'var(--text-primary)',
+                  border: 'none'
+                }}
+              >
+                <FileSpreadsheet size={13} />
+              </button>
+
+              <button
+                onClick={() => onChangeChameleonMode(chameleonMode === 'vscode' ? 'none' : 'vscode')}
+                className="frosted-btn"
+                title="VS Code 代码伪装 [Alt+C]"
+                style={{
+                  padding: '4px 6px',
+                  borderRadius: '9999px',
+                  background: chameleonMode === 'vscode' ? '#007acc' : 'transparent',
+                  color: chameleonMode === 'vscode' ? '#ffffff' : 'var(--text-primary)',
+                  border: 'none'
+                }}
+              >
+                <Code2 size={13} />
+              </button>
+
+              <button
+                onClick={() => onChangeChameleonMode(chameleonMode === 'idea' ? 'none' : 'idea')}
+                className="frosted-btn"
+                title="IntelliJ IDEA 伪装 [Alt+I]"
+                style={{
+                  padding: '4px 6px',
+                  borderRadius: '9999px',
+                  background: chameleonMode === 'idea' ? '#fe315d' : 'transparent',
+                  color: chameleonMode === 'idea' ? '#ffffff' : 'var(--text-primary)',
+                  border: 'none',
+                  fontWeight: 800,
+                  fontSize: '11px',
+                  lineHeight: 1
+                }}
+              >
+                <span>IJ</span>
+              </button>
+
+              <button
+                onClick={() => onChangeChameleonMode(chameleonMode === 'stickynote' ? 'none' : 'stickynote')}
+                className="frosted-btn"
+                title="便签条伪装"
+                style={{
+                  padding: '4px 6px',
+                  borderRadius: '9999px',
+                  background: chameleonMode === 'stickynote' ? '#eab308' : 'transparent',
+                  color: chameleonMode === 'stickynote' ? '#ffffff' : 'var(--text-secondary)',
+                  border: 'none'
+                }}
+              >
+                <StickyNote size={13} />
+              </button>
+
+              <button
+                onClick={() => onChangeChameleonMode(chameleonMode === 'ticker' ? 'none' : 'ticker')}
+                className="frosted-btn"
+                title="24px 极简单行滚动条 [Alt+1]"
+                style={{
+                  padding: '4px 6px',
+                  borderRadius: '9999px',
+                  background: chameleonMode === 'ticker' ? 'var(--accent-color)' : 'transparent',
+                  color: chameleonMode === 'ticker' ? '#ffffff' : 'var(--text-primary)',
+                  border: 'none'
+                }}
+              >
+                <Activity size={13} />
+              </button>
+            </div>
+          )}
 
           {/* Always On Top Toggle */}
           <button
@@ -353,40 +509,69 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
             style={{
               padding: '5px 7px',
               borderRadius: '9999px',
-              color: alwaysOnTop ? 'var(--accent-color)' : 'var(--text-secondary)',
+              color: alwaysOnTop ? 'var(--accent-color)' : 'var(--text-primary)',
               background: alwaysOnTop ? 'var(--glass-surface-active)' : 'transparent'
             }}
           >
             <Pin size={13} style={{ transform: alwaysOnTop ? 'rotate(45deg)' : 'none' }} />
           </button>
 
-          {/* Window Control Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginLeft: '2px' }}>
+          {/* Window Control Buttons with High-Contrast Text & Crisp Close X */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '2px' }}>
             <button
               onClick={() => windowControls.minimize()}
               className="frosted-btn"
-              style={{ padding: '5px 7px', borderRadius: '9999px', border: 'none', background: 'transparent' }}
+              style={{
+                padding: '5px 7px',
+                borderRadius: '9999px',
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--text-primary)'
+              }}
               title="最小化"
             >
-              <Minus size={13} />
+              <Minus size={13} style={{ color: 'var(--text-primary)' }} />
             </button>
             <button
               onClick={() => windowControls.toggleMaximize()}
               className="frosted-btn"
-              style={{ padding: '5px 7px', borderRadius: '9999px', border: 'none', background: 'transparent' }}
+              style={{
+                padding: '5px 7px',
+                borderRadius: '9999px',
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--text-primary)'
+              }}
               title="最大化 / 还原"
             >
-              <Square size={11} />
+              <Square size={11} style={{ color: 'var(--text-primary)' }} />
             </button>
             <button
               onClick={() => windowControls.close()}
               className="frosted-btn"
-              style={{ padding: '5px 7px', borderRadius: '9999px', border: 'none', background: 'transparent' }}
-              title="关闭"
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'inherit')}
+              style={{
+                padding: '5px 7px',
+                borderRadius: '9999px',
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--text-primary)',
+                transition: 'background 0.15s ease, color 0.15s ease'
+              }}
+              title="关闭应用"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#ef4444';
+                e.currentTarget.style.color = '#ffffff';
+                const svg = e.currentTarget.querySelector('svg');
+                if (svg) svg.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = 'var(--text-primary)';
+                const svg = e.currentTarget.querySelector('svg');
+                if (svg) svg.style.color = 'var(--text-primary)';
+              }}
             >
-              <X size={13} />
+              <X size={13} style={{ color: 'var(--text-primary)' }} />
             </button>
           </div>
         </div>

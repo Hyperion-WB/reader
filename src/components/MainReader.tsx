@@ -6,7 +6,7 @@ import { TTSBar } from './TTSBar';
 import { TTSService } from '../services/ttsService';
 import { ShortcutsModal } from './ShortcutsModal';
 import { ChapterSearchBar } from './ChapterSearchBar';
-import { Loader2, BookmarkPlus, Pause, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, BookmarkPlus, Pause } from 'lucide-react';
 
 interface MainReaderProps {
   book: Book;
@@ -310,7 +310,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
           width: '100%',
           height: '100%',
           overflowY: 'auto',
-          padding: '28px 36px 90px 36px',
+          padding: '24px clamp(14px, 4vw, 36px) 140px clamp(14px, 4vw, 36px)',
           boxSizing: 'border-box',
           fontFamily: themeConfig.fontFamily,
           fontSize: `${themeConfig.fontSize}px`,
@@ -402,7 +402,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
               );
             })}
 
-            {/* Bottom Chapter End Navigator & Reading Stats */}
+            {/* Bottom Chapter End Reading Stats Footer */}
             <div
               style={{
                 marginTop: '48px',
@@ -410,36 +410,13 @@ export const MainReader: React.FC<MainReaderProps> = ({
                 borderTop: '1px solid var(--glass-border)',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
+                justifyContent: 'center',
                 fontSize: '12px',
-                color: 'var(--text-secondary)'
+                color: 'var(--text-muted)',
+                letterSpacing: '0.5px'
               }}
             >
-              <button
-                onClick={onPrevChapter}
-                disabled={book.currentChapterIndex <= 0}
-                className="frosted-btn"
-                style={{ padding: '6px 14px', borderRadius: '9999px' }}
-              >
-                <ChevronLeft size={14} />
-                <span>上一章</span>
-              </button>
-
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', fontSize: '11.5px', color: 'var(--text-muted)' }}>
-                <span>本章约 {wordCount} 字</span>
-                <span>·</span>
-                <span>进度 {book.currentProgressPercent}%</span>
-              </div>
-
-              <button
-                onClick={onNextChapter}
-                disabled={book.currentChapterIndex >= book.chapters.length - 1}
-                className="frosted-btn frosted-btn-primary"
-                style={{ padding: '6px 14px', borderRadius: '9999px' }}
-              >
-                <span>下一章</span>
-                <ChevronRight size={14} />
-              </button>
+              <span>—— 本章完 · 约 {wordCount} 字 · 全书进度 {book.currentProgressPercent}% ——</span>
             </div>
           </div>
         )}

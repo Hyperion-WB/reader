@@ -599,6 +599,11 @@ export function App() {
         onUpdateSources={setSources}
         onUpdateTheme={setThemeConfig}
         onUpdateStealth={setStealthConfig}
+        onUpdateBookCover={(bookId, cover) => {
+          const updated = books.map((b) => (b.id === bookId ? { ...b, cover } : b));
+          setBooks(updated);
+          StorageService.saveBooks(updated);
+        }}
         onReloadAllData={() => {
           setBooks(StorageService.getBooks());
           setSources(StorageService.getSources());

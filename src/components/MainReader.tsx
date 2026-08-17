@@ -145,7 +145,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
     };
   }, [isAutoScrolling, autoScrollStep]);
 
-  // Keyboard Shortcuts (Space for Auto-scroll, ? for help, Arrow keys for chapter)
+  // Comprehensive Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger if user is in an input or textarea
@@ -158,16 +158,42 @@ export const MainReader: React.FC<MainReaderProps> = ({
         setIsAutoScrolling((prev) => !prev);
       } else if (e.key === '?') {
         setShowShortcutsModal((prev) => !prev);
-      } else if (e.key === 'ArrowRight' || e.key === ']') {
+      } else if (e.key === 'ArrowRight' || e.key === ']' || e.key === 'j' || e.key === 'J') {
+        e.preventDefault();
         onNextChapter();
-      } else if (e.key === 'ArrowLeft' || e.key === '[') {
+      } else if (e.key === 'ArrowLeft' || e.key === '[' || e.key === 'k' || e.key === 'K') {
+        e.preventDefault();
         onPrevChapter();
+      } else if (e.key === 'PageDown') {
+        e.preventDefault();
+        if (containerRef.current) {
+          containerRef.current.scrollBy({ top: window.innerHeight * 0.75, behavior: 'smooth' });
+        }
+      } else if (e.key === 'PageUp') {
+        e.preventDefault();
+        if (containerRef.current) {
+          containerRef.current.scrollBy({ top: -window.innerHeight * 0.75, behavior: 'smooth' });
+        }
+      } else if (e.key === 'ArrowDown') {
+        if (containerRef.current) {
+          containerRef.current.scrollBy({ top: 80, behavior: 'smooth' });
+        }
+      } else if (e.key === 'ArrowUp') {
+        if (containerRef.current) {
+          containerRef.current.scrollBy({ top: -80, behavior: 'smooth' });
+        }
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+        e.preventDefault();
+        onUpdateTheme({ ...themeConfig, fontSize: Math.min(36, themeConfig.fontSize + 1) });
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === '-' || e.key === '_')) {
+        e.preventDefault();
+        onUpdateTheme({ ...themeConfig, fontSize: Math.max(11, themeConfig.fontSize - 1) });
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onNextChapter, onPrevChapter]);
+  }, [onNextChapter, onPrevChapter, onUpdateTheme, themeConfig]);
 
   // Handle Text Selection for Bookmarking
   const handleMouseUp = () => {

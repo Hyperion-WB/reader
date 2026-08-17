@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Book } from '../../types/reader';
-import { BookOpen, Trash2, Plus, Upload } from 'lucide-react';
+import {
+  BookOpen,
+  Trash2,
+  Plus,
+  Upload,
+  LayoutGrid,
+  List,
+  AlignLeft,
+  Palette,
+  Search
+} from 'lucide-react';
+import { CoverCustomizerModal } from '../CoverCustomizerModal';
 
 interface BookshelfViewProps {
   books: Book[];
@@ -9,7 +20,10 @@ interface BookshelfViewProps {
   onDeleteBook: (id: string) => void;
   onImportLocal: () => void;
   onOpenSearch: () => void;
+  onUpdateBookCover?: (bookId: string, cover: string) => void;
 }
+
+export type BookshelfViewMode = 'grid' | 'list' | 'minimal';
 
 export const BookshelfView: React.FC<BookshelfViewProps> = ({
   books,
@@ -17,45 +31,134 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
   onSelectBook,
   onDeleteBook,
   onImportLocal,
-  onOpenSearch
+  onOpenSearch,
+  onUpdateBookCover
 }) => {
+  const [viewMode, setViewMode] = useState<BookshelfViewMode>('list');
+  const [searchFilter, setSearchFilter] = useState('');
+  const [editingCoverBook, setEditingCoverBook] = useState<Book | null>(null);
+
+  const filteredBooks = books.filter(
+    (b) =>
+      b.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      b.author.toLowerCase().includes(searchFilter.toLowerCase())
+  );
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px', padding: '2px 0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '10px', padding: '2px 0' }}>
       {/* Top Action Bar */}
-      <div style={{ display: 'flex', gap: '10px', padding: '4px 2px' }}>
+      <div style={{ display: 'flex', gap: '8px', padding: '2px 0' }}>
         <button
           onClick={onImportLocal}
           className="frosted-btn frosted-btn-primary"
-          style={{ flex: 1, padding: '9px 12px', borderRadius: '9999px', fontSize: '13px' }}
+          style={{ flex: 1, padding: '8px 12px', borderRadius: '9999px', fontSize: '12.5px' }}
         >
-          <Upload size={14} />
+          <Upload size={13} />
           <span>导入本地 (TXT / EPUB)</span>
         </button>
         <button
           onClick={onOpenSearch}
           className="frosted-btn"
-          style={{ flex: 1, padding: '9px 12px', borderRadius: '9999px', fontSize: '13px' }}
+          style={{ flex: 1, padding: '8px 12px', borderRadius: '9999px', fontSize: '12.5px' }}
         >
-          <Plus size={14} />
-          <span>全网搜书 / 导入书源</span>
+          <Plus size={13} />
+          <span>全网搜书 / 书源</span>
         </button>
       </div>
 
-      {/* Book Grid / List */}
+      {/* Search & Layout View Mode Switcher */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '2px 0' }}>
+        <div style={{ position: 'relative', flex: 1 }}>
+          <Search
+            size={13}
+            style={{
+              position: 'absolute',
+              left: '10px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--text-muted)'
+            }}
+          />
+          <input
+            type="text"
+            placeholder="在书架中搜索..."
+            value={searchFilter}
+            onChange={(e) => setSearchFilter(e.target.value)}
+            className="frosted-input"
+            style={{ paddingLeft: '30px', padding: '6px 10px 6px 30px', fontSize: '11.5px', borderRadius: '9999px' }}
+          />
+        </div>
+
+        {/* View Mode Pills */}
+        <div
+          style={{
+            display: 'flex',
+            background: 'rgba(0, 0, 0, 0.16)',
+            padding: '2px',
+            borderRadius: '9999px',
+            border: '1px solid var(--glass-border)',
+            gap: '2px'
+          }}
+        >
+          <button
+            onClick={() => setViewMode('list')}
+            className="frosted-btn"
+            title="紧凑单行列表模式 (适合多书/高隐蔽)"
+            style={{
+              padding: '4px 7px',
+              borderRadius: '9999px',
+              background: viewMode === 'list' ? 'var(--accent-color)' : 'transparent',
+              color: viewMode === 'list' ? '#fff' : 'var(--text-secondary)',
+              border: 'none'
+            }}
+          >
+            <List size={13} />
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            className="frosted-btn"
+            title="精美网格卡片模式"
+            style={{
+              padding: '4px 7px',
+              borderRadius: '9999px',
+              background: viewMode === 'grid' ? 'var(--accent-color)' : 'transparent',
+              color: viewMode === 'grid' ? '#fff' : 'var(--text-secondary)',
+              border: 'none'
+            }}
+          >
+            <LayoutGrid size={13} />
+          </button>
+          <button
+            onClick={() => setViewMode('minimal')}
+            className="frosted-btn"
+            title="极简无图模式 (极致摸鱼)"
+            style={{
+              padding: '4px 7px',
+              borderRadius: '9999px',
+              background: viewMode === 'minimal' ? 'var(--accent-color)' : 'transparent',
+              color: viewMode === 'minimal' ? '#fff' : 'var(--text-secondary)',
+              border: 'none'
+            }}
+          >
+            <AlignLeft size={13} />
+          </button>
+        </div>
+      </div>
+
+      {/* Book List / Grid / Minimal */}
       <div
         style={{
           flex: 1,
           overflowY: 'auto',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: '12px',
-          paddingRight: '4px'
+          display: 'flex',
+          flexDirection: 'column',
+          gap: viewMode === 'minimal' ? '4px' : '8px',
+          padding: '4px 2px 12px 2px'
         }}
       >
-        {books.length === 0 ? (
+        {filteredBooks.length === 0 ? (
           <div
             style={{
-              gridColumn: '1 / -1',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -63,24 +166,157 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
               padding: '40px 20px',
               color: 'var(--text-muted)',
               textAlign: 'center',
-              gap: '12px'
+              gap: '10px'
             }}
           >
-            <BookOpen size={40} strokeWidth={1.5} />
-            <div>书架还是空的，快导入本地小说或搜索网络书源吧</div>
+            <BookOpen size={36} strokeWidth={1.5} />
+            <div style={{ fontSize: '13px' }}>书架无匹配小说</div>
           </div>
         ) : (
-          books.map((book) => {
+          filteredBooks.map((book) => {
             const isActive = book.id === activeBookId;
             const progress = Math.round(
               ((book.currentChapterIndex + 1) / Math.max(1, book.chapters.length)) * 100
             );
 
+            // 1. Compact List View Mode
+            if (viewMode === 'list') {
+              return (
+                <div
+                  key={book.id}
+                  onClick={() => onSelectBook(book.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    borderRadius: '14px',
+                    cursor: 'pointer',
+                    border: isActive ? '1px solid var(--accent-color)' : '1px solid var(--glass-border)',
+                    background: isActive ? 'var(--glass-surface-active)' : 'var(--glass-surface)',
+                    transition: 'background 0.2s var(--ios-spring), border-color 0.2s ease',
+                    gap: '10px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) e.currentTarget.style.background = 'var(--glass-surface-hover)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) e.currentTarget.style.background = 'var(--glass-surface)';
+                  }}
+                >
+                  {/* Mini Cover Badge */}
+                  <div
+                    style={{
+                      width: '28px',
+                      height: '36px',
+                      borderRadius: '5px',
+                      background: book.cover
+                        ? `url(${book.cover}) center/cover`
+                        : 'linear-gradient(135deg, #334155 0%, #1e293b 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#ffffff',
+                      fontWeight: 700,
+                      fontSize: '12px',
+                      flexShrink: 0
+                    }}
+                  >
+                    {!book.cover && book.title.slice(0, 1)}
+                  </div>
+
+                  {/* Title & Author */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        fontSize: '13px',
+                        color: 'var(--text-primary)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {book.title}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'flex', gap: '8px' }}>
+                      <span>{book.author}</span>
+                      <span>·</span>
+                      <span>第 {book.currentChapterIndex + 1}/{book.chapters.length} 章 ({progress}%)</span>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingCoverBook(book);
+                      }}
+                      className="frosted-btn"
+                      style={{ padding: '4px 6px', borderRadius: '9999px' }}
+                      title="更换封面 / 隐蔽书皮"
+                    >
+                      <Palette size={12} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`确定从书架移除《${book.title}》吗？`)) {
+                          onDeleteBook(book.id);
+                        }
+                      }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}
+                      title="删除"
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+
+            // 2. Minimalist Text-Only Mode (Zero distraction)
+            if (viewMode === 'minimal') {
+              return (
+                <div
+                  key={book.id}
+                  onClick={() => onSelectBook(book.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '7px 12px',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    border: isActive ? '1px solid var(--accent-color)' : '1px solid transparent',
+                    background: isActive ? 'var(--glass-surface-active)' : 'transparent',
+                    fontSize: '12.5px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) e.currentTarget.style.background = 'var(--glass-surface)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <span style={{ fontWeight: isActive ? 600 : 400, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    《{book.title}》
+                  </span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    {progress}%
+                  </span>
+                </div>
+              );
+            }
+
+            // 3. Grid Card Mode
             return (
               <div
                 key={book.id}
                 onClick={() => onSelectBook(book.id)}
-                className="frosted-panel"
                 style={{
                   display: 'flex',
                   gap: '12px',
@@ -89,45 +325,41 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
                   cursor: 'pointer',
                   border: isActive ? '1px solid var(--accent-color)' : '1px solid var(--glass-border)',
                   background: isActive ? 'var(--glass-surface-active)' : 'var(--glass-surface)',
-                  boxShadow: isActive ? '0 4px 16px rgba(0,0,0,0.12)' : 'none'
+                  transition: 'background 0.2s var(--ios-spring), border-color 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) e.currentTarget.style.background = 'var(--glass-surface-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) e.currentTarget.style.background = 'var(--glass-surface)';
                 }}
               >
-                {/* Book Cover Placeholder or Image */}
+                {/* Book Cover */}
                 <div
                   style={{
-                    width: '60px',
-                    height: '80px',
+                    width: '54px',
+                    height: '72px',
                     borderRadius: '8px',
                     background: book.cover
                       ? `url(${book.cover}) center/cover`
-                      : 'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)',
+                      : 'linear-gradient(135deg, #334155 0%, #1e293b 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: '#ffffff',
                     fontWeight: 700,
-                    fontSize: '18px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    fontSize: '16px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                     flexShrink: 0
                   }}
                 >
                   {!book.cover && book.title.slice(0, 1)}
                 </div>
 
-                {/* Book Details */}
+                {/* Details */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}>
                   <div>
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        fontSize: '14px',
-                        color: 'var(--text-primary)',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}
-                      title={book.title}
-                    >
+                    <div style={{ fontWeight: 600, fontSize: '13.5px', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {book.title}
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -135,63 +367,63 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Progress Bar & Chapter Info */}
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                      <span>
-                        第 {book.currentChapterIndex + 1}/{book.chapters.length} 章
-                      </span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--text-muted)', marginBottom: '3px' }}>
+                      <span>第 {book.currentChapterIndex + 1}/{book.chapters.length} 章</span>
                       <span>{progress}%</span>
                     </div>
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '4px',
-                        borderRadius: '9999px',
-                        background: 'rgba(255, 255, 255, 0.2)',
-                        overflow: 'hidden'
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: `${progress}%`,
-                          height: '100%',
-                          background: 'var(--accent-color)',
-                          borderRadius: '9999px',
-                          transition: 'width 0.3s ease'
-                        }}
-                      />
+                    <div style={{ width: '100%', height: '3px', borderRadius: '9999px', background: 'rgba(255, 255, 255, 0.15)', overflow: 'hidden' }}>
+                      <div style={{ width: `${progress}%`, height: '100%', background: 'var(--accent-color)', borderRadius: '9999px' }} />
                     </div>
                   </div>
                 </div>
 
-                {/* Delete Button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (confirm(`确定从书架移除《${book.title}》吗？`)) {
-                      onDeleteBook(book.id);
-                    }
-                  }}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    padding: '4px',
-                    alignSelf: 'flex-start'
-                  }}
-                  title="删除书籍"
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
-                >
-                  <Trash2 size={14} />
-                </button>
+                {/* Actions */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`确定从书架移除《${book.title}》吗？`)) {
+                        onDeleteBook(book.id);
+                      }
+                    }}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px' }}
+                    title="删除"
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingCoverBook(book);
+                    }}
+                    className="frosted-btn"
+                    style={{ padding: '3px 6px', borderRadius: '9999px', fontSize: '10.5px' }}
+                    title="更换封面"
+                  >
+                    <Palette size={11} />
+                  </button>
+                </div>
               </div>
             );
           })
         )}
       </div>
+
+      {/* Cover Customizer Modal */}
+      <CoverCustomizerModal
+        book={editingCoverBook}
+        isOpen={Boolean(editingCoverBook)}
+        onClose={() => setEditingCoverBook(null)}
+        onUpdateCover={(bookId, newCover) => {
+          if (onUpdateBookCover) {
+            onUpdateBookCover(bookId, newCover);
+          }
+        }}
+      />
     </div>
   );
 };

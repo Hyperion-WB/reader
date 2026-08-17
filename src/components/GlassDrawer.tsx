@@ -42,6 +42,7 @@ interface GlassDrawerProps {
   onUpdateTheme: (theme: ThemeConfig) => void;
   onUpdateStealth: (config: StealthConfig) => void;
   onReloadAllData: () => void;
+  onUpdateBookCover?: (bookId: string, cover: string) => void;
 }
 
 export const GlassDrawer: React.FC<GlassDrawerProps> = ({
@@ -64,7 +65,8 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
   onUpdateSources,
   onUpdateTheme,
   onUpdateStealth,
-  onReloadAllData
+  onReloadAllData,
+  onUpdateBookCover
 }) => {
   const [activeTab, setActiveTab] = useState<DrawerTab>('bookshelf');
 
@@ -147,6 +149,7 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
               onDeleteBook={onDeleteBook}
               onImportLocal={onImportLocal}
               onOpenSearch={() => setActiveTab('search')}
+              onUpdateBookCover={onUpdateBookCover}
             />
           )}
 

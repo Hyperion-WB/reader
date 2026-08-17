@@ -47,7 +47,8 @@ export const FrostedSelect: React.FC<FrostedSelectProps> = ({
       style={{
         position: 'relative',
         width: typeof width === 'number' ? `${width}px` : width,
-        userSelect: 'none'
+        userSelect: 'none',
+        zIndex: isOpen ? 1000 : 1
       }}
     >
       {/* Trigger Button */}
@@ -87,10 +88,10 @@ export const FrostedSelect: React.FC<FrostedSelectProps> = ({
         />
       </button>
 
-      {/* Frosted Dropdown Popover */}
+      {/* Frosted Dropdown Popover (Rendered above everything) */}
       {isOpen && (
         <div
-          className="frosted-panel animate-ios-spring"
+          className="animate-ios-spring"
           style={{
             position: 'absolute',
             top: 'calc(100% + 6px)',
@@ -99,10 +100,13 @@ export const FrostedSelect: React.FC<FrostedSelectProps> = ({
             maxHeight: '220px',
             overflowY: 'auto',
             borderRadius: '14px',
-            padding: '4px',
+            padding: '5px',
             boxSizing: 'border-box',
-            zIndex: 3000,
-            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.1)',
+            background: 'var(--glass-surface-active)',
+            backdropFilter: 'blur(32px) saturate(190%)',
+            WebkitBackdropFilter: 'blur(32px) saturate(190%)',
+            zIndex: 99999,
+            boxShadow: '0 12px 36px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.15)',
             border: '1px solid var(--glass-border-hover)'
           }}
         >

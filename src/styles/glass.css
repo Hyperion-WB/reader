@@ -153,8 +153,15 @@ body, html {
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border: 1px solid var(--glass-border);
+  transition: background 0.25s var(--ios-spring), border-color 0.25s ease;
+}
+
+.frosted-panel-elevated {
+  background: var(--glass-surface);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
-  transition: background 0.25s var(--ios-spring), border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 /* iOS Dynamic Island Floating Capsule Bar */

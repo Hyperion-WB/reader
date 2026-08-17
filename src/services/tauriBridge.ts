@@ -6,55 +6,89 @@ import { readTextFile, readFile } from '@tauri-apps/plugin-fs';
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
 
 export const isTauri = () => {
-  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+  return typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window);
 };
 
-// Window Controls
+// Robust Window Controls for Frameless Tauri App
 export const windowControls = {
   minimize: async () => {
     if (isTauri()) {
-      const win = getCurrentWindow();
-      await win.minimize();
+      try {
+        await invoke('app_minimize');
+      } catch {
+        const win = getCurrentWindow();
+        await win.minimize();
+      }
     }
   },
   toggleMaximize: async () => {
     if (isTauri()) {
-      const win = getCurrentWindow();
-      await win.toggleMaximize();
+      try {
+        await invoke('app_toggle_maximize');
+      } catch {
+        const win = getCurrentWindow();
+        await win.toggleMaximize();
+      }
     }
   },
   close: async () => {
     if (isTauri()) {
-      const win = getCurrentWindow();
-      await win.close();
+      try {
+        await invoke('app_close');
+      } catch {
+        const win = getCurrentWindow();
+        await win.close();
+      }
     }
   },
   hide: async () => {
     if (isTauri()) {
-      const win = getCurrentWindow();
-      await win.hide();
+      try {
+        const win = getCurrentWindow();
+        await win.hide();
+      } catch (err) {
+        console.warn('Failed to hide window:', err);
+      }
     }
   },
   show: async () => {
     if (isTauri()) {
-      const win = getCurrentWindow();
-      await win.show();
-      await win.setFocus();
+      try {
+        const win = getCurrentWindow();
+        await win.show();
+        await win.setFocus();
+      } catch (err) {
+        console.warn('Failed to show window:', err);
+      }
     }
   },
   startDragging: async () => {
     if (isTauri()) {
-      const win = getCurrentWindow();
-      await win.startDragging();
+      try {
+        await invoke('app_start_drag');
+      } catch {
+        const win = getCurrentWindow();
+        await win.startDragging();
+      }
+    }
+  },
+  startResize: async (direction: any) => {
+    if (isTauri()) {
+      try {
+        const win = getCurrentWindow();
+        await win.startResizeDragging(direction);
+      } catch (err) {
+        console.warn('Failed to start resize dragging:', err);
+      }
     }
   },
   setAlwaysOnTop: async (alwaysOnTop: boolean) => {
     if (isTauri()) {
       try {
+        await invoke('set_always_on_top', { onTop: alwaysOnTop });
+      } catch {
         const win = getCurrentWindow();
         await win.setAlwaysOnTop(alwaysOnTop);
-      } catch (err) {
-        console.warn('Failed to set always on top:', err);
       }
     }
   },
@@ -98,36 +132,40 @@ export const openLocalFileDialog = async (filters: { name: string; extensions: s
   if (isTauri()) {
     const selected = await open({
       multiple: false,
-      filters
+      filters: filters
     });
-    if (typeof selected === 'string') {
-      const filename = selected.split(/[\\/]/).pop() || '未命名书籍';
-      // If extension is epub, read binary
-      if (selected.toLowerCase().endsWith('.epub')) {
-        const bytes = await readFile(selected);
-        return { name: filename, path: selected, buffer: bytes.buffer };
-      } else {
-        const text = await readTextFile(selected);
-        return { name: filename, path: selected, text };
-      }
-    }
-    return null;
+    return selected as string | null;
   }
   return null;
 };
 
-// Universal Cross-Origin HTTP Request (uses Tauri plugin-http to bypass browser CORS)
+export const readLocalTextFile = async (path: string) => {
+  if (isTauri()) {
+    return await readTextFile(path);
+  }
+  throw new Error('Local file read is only available in Desktop App mode');
+};
+
+export const readLocalBinaryFile = async (path: string): Promise<ArrayBuffer> => {
+  if (isTauri()) {
+    const uint8Array = await readFile(path);
+    return uint8Array.buffer as ArrayBuffer;
+  }
+  throw new Error('Local binary file read is only available in Desktop App mode');
+};
+
+// Cross-Platform Fetch Bridge (Bypasses Web CORS via Rust plugin-http in Desktop mode)
 export const universalFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
   if (isTauri()) {
     try {
-      return await tauriFetch(url, {
-        method: options.method || 'GET',
-        headers: (options.headers as Record<string, string>) || {},
-        body: options.body as any,
-        connectTimeout: 10000
+      const tauriRes = await tauriFetch(url, {
+        method: options.method as any || 'GET',
+        headers: options.headers as any,
+        body: options.body as any
       });
+      return tauriRes as unknown as Response;
     } catch (err) {
-      console.warn('Tauri HTTP request fallback to native fetch:', err);
+      console.warn('Tauri native fetch failed, falling back to browser fetch:', err);
     }
   }
   return await fetch(url, options);

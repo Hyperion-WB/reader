@@ -1,6 +1,30 @@
 use tauri::{AppHandle, Manager, WebviewWindow};
 
 #[tauri::command]
+fn app_minimize(window: WebviewWindow) -> Result<(), String> {
+    window.minimize().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn app_toggle_maximize(window: WebviewWindow) -> Result<(), String> {
+    if window.is_maximized().unwrap_or(false) {
+        window.unmaximize().map_err(|e| e.to_string())
+    } else {
+        window.maximize().map_err(|e| e.to_string())
+    }
+}
+
+#[tauri::command]
+fn app_close(window: WebviewWindow) -> Result<(), String> {
+    window.close().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn app_start_drag(window: WebviewWindow) -> Result<(), String> {
+    window.start_dragging().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn set_click_through(window: WebviewWindow, ignore: bool) -> Result<(), String> {
     window.set_ignore_cursor_events(ignore).map_err(|e| e.to_string())
 }
@@ -41,6 +65,10 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
+            app_minimize,
+            app_toggle_maximize,
+            app_close,
+            app_start_drag,
             set_click_through,
             set_always_on_top,
             set_skip_taskbar,

@@ -19,12 +19,15 @@ import { TickerBarMode } from './components/ChameleonModes/TickerBarMode';
 import {
   isTauri,
   openLocalFileDialog,
+  readLocalBinaryFile,
+  readLocalTextFile,
   registerBossKeyShortcut,
   windowControls
 } from './services/tauriBridge';
 import { parseEpubFile, parseTxtFile } from './services/localFileParser';
 import { Upload, Plus } from 'lucide-react';
 import { CuteAppIcon } from './components/CuteAppIcon';
+import { WindowResizeHandles } from './components/WindowResizeHandles';
 import './styles/glass.css';
 
 export function App() {
@@ -223,18 +226,19 @@ export function App() {
   // Local File Import Dialog (TXT / EPUB)
   const handleImportLocalFile = async () => {
     try {
-      const fileData = await openLocalFileDialog([
+      const filePath = await openLocalFileDialog([
         { name: '小说书籍文件 (*.txt, *.epub, *.md)', extensions: ['txt', 'epub', 'md'] }
       ]);
 
-      if (fileData) {
+      if (filePath) {
+        const fileName = filePath.split(/[/\\]/).pop() || '未命名小说';
         let importedBook: Book;
-        if (fileData.buffer) {
-          importedBook = await parseEpubFile(fileData.name, fileData.buffer);
-        } else if (fileData.text) {
-          importedBook = parseTxtFile(fileData.name, fileData.text);
+        if (fileName.toLowerCase().endsWith('.epub')) {
+          const buffer = await readLocalBinaryFile(filePath);
+          importedBook = await parseEpubFile(fileName, buffer);
         } else {
-          return;
+          const text = await readLocalTextFile(filePath);
+          importedBook = parseTxtFile(fileName, text);
         }
         handleAddBookToShelf(importedBook);
         setIsDrawerOpen(false);
@@ -366,6 +370,9 @@ export function App() {
         boxSizing: 'border-box'
       }}
     >
+      {/* Frameless Window Edge Resize Handles */}
+      <WindowResizeHandles />
+
       {/* Hidden HTML5 File Input for Web Mode */}
       <input
         id="html5-file-input"

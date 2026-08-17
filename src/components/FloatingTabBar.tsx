@@ -109,15 +109,24 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
   return (
     <div
       className="tauri-drag-handle"
+      data-tauri-drag-region="true"
+      onMouseDown={(e) => {
+        if ((e.target as HTMLElement).closest('.tauri-no-drag, button, input, select, a, textarea')) {
+          return;
+        }
+        windowControls.startDragging();
+      }}
       style={{
         padding: '6px 8px 0 8px',
         width: '100%',
         boxSizing: 'border-box',
-        zIndex: 1000
+        zIndex: 1000,
+        userSelect: 'none'
       }}
     >
       <div
         className="ios-floating-bar"
+        data-tauri-drag-region="true"
         style={{
           display: 'flex',
           alignItems: 'center',

@@ -5,6 +5,7 @@ import { HUDControls } from './HUDControls';
 import { TTSBar } from './TTSBar';
 import { TTSService } from '../services/ttsService';
 import { ShortcutsModal } from './ShortcutsModal';
+import { ChapterSearchBar } from './ChapterSearchBar';
 import { Loader2, BookmarkPlus, Pause, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface MainReaderProps {
@@ -37,6 +38,11 @@ export const MainReader: React.FC<MainReaderProps> = ({
   const [selectedText, setSelectedText] = useState<string>('');
   const [selectionPos, setSelectionPos] = useState<{ x: number; y: number } | null>(null);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+
+  // In-Chapter Keyword Search
+  const [showChapterSearch, setShowChapterSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [matchIndex, setMatchIndex] = useState(0);
 
   // Auto Scroll Engine
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
@@ -123,7 +129,6 @@ export const MainReader: React.FC<MainReaderProps> = ({
     if (!isHoveredOrTouching.current && containerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
       if (scrollTop + clientHeight >= scrollHeight - 5) {
-        // Reached bottom of chapter, turn next chapter automatically!
         setIsAutoScrolling(false);
         onNextChapter();
         return;
@@ -145,15 +150,17 @@ export const MainReader: React.FC<MainReaderProps> = ({
     };
   }, [isAutoScrolling, autoScrollStep]);
 
-  // Comprehensive Keyboard Shortcuts
+  // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is in an input or textarea
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
         return;
       }
 
-      if (e.code === 'Space') {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+        e.preventDefault();
+        setShowChapterSearch((prev) => !prev);
+      } else if (e.code === 'Space') {
         e.preventDefault();
         setIsAutoScrolling((prev) => !prev);
       } else if (e.key === '?') {
@@ -260,6 +267,11 @@ export const MainReader: React.FC<MainReaderProps> = ({
 
   const wordCount = currentChapterContent ? currentChapterContent.replace(/\s+/g, '').length : 0;
 
+  // Calculate search matches
+  const totalSearchMatches = searchQuery.trim()
+    ? (currentChapterContent.match(new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')) || []).length
+    : 0;
+
   return (
     <div
       style={{
@@ -271,6 +283,24 @@ export const MainReader: React.FC<MainReaderProps> = ({
       onMouseEnter={() => setShowHUD(true)}
       onMouseLeave={() => setShowHUD(false)}
     >
+      {/* In-Chapter Keyword Search Bar */}
+      <ChapterSearchBar
+        isOpen={showChapterSearch}
+        onClose={() => {
+          setShowChapterSearch(false);
+          setSearchQuery('');
+        }}
+        searchQuery={searchQuery}
+        onChangeQuery={(q) => {
+          setSearchQuery(q);
+          setMatchIndex(0);
+        }}
+        currentIndex={matchIndex}
+        totalMatches={totalSearchMatches}
+        onNextMatch={() => setMatchIndex((prev) => (prev + 1) % Math.max(1, totalSearchMatches))}
+        onPrevMatch={() => setMatchIndex((prev) => (prev - 1 + totalSearchMatches) % Math.max(1, totalSearchMatches))}
+      />
+
       {/* Scrollable Reading Content Area */}
       <div
         ref={containerRef}
@@ -305,7 +335,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
           {currentChapter.title}
         </div>
 
-        {/* Content Body */}
+        {/* Content Body with Realtime Search Match Highlighting */}
         {loadingContent ? (
           <div
             style={{
@@ -323,18 +353,54 @@ export const MainReader: React.FC<MainReaderProps> = ({
           </div>
         ) : (
           <div style={{ maxWidth: '860px', margin: '0 auto' }}>
-            {paragraphs.map((para, idx) => (
-              <p
-                key={idx}
-                style={{
-                  marginBottom: `${themeConfig.paragraphSpacing}px`,
-                  textIndent: `${themeConfig.paragraphIndent}em`,
-                  textAlign: 'justify'
-                }}
-              >
-                {para}
-              </p>
-            ))}
+            {paragraphs.map((para, idx) => {
+              if (searchQuery.trim().length > 0) {
+                const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                const parts = para.split(regex);
+                return (
+                  <p
+                    key={idx}
+                    style={{
+                      marginBottom: `${themeConfig.paragraphSpacing}px`,
+                      textIndent: `${themeConfig.paragraphIndent}em`,
+                      textAlign: 'justify'
+                    }}
+                  >
+                    {parts.map((part, pIdx) =>
+                      regex.test(part) ? (
+                        <mark
+                          key={pIdx}
+                          style={{
+                            background: '#fef08a',
+                            color: '#713f12',
+                            padding: '1px 3px',
+                            borderRadius: '4px',
+                            fontWeight: 600
+                          }}
+                        >
+                          {part}
+                        </mark>
+                      ) : (
+                        part
+                      )
+                    )}
+                  </p>
+                );
+              }
+
+              return (
+                <p
+                  key={idx}
+                  style={{
+                    marginBottom: `${themeConfig.paragraphSpacing}px`,
+                    textIndent: `${themeConfig.paragraphIndent}em`,
+                    textAlign: 'justify'
+                  }}
+                >
+                  {para}
+                </p>
+              );
+            })}
 
             {/* Bottom Chapter End Navigator & Reading Stats */}
             <div

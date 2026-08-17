@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 
 export interface SelectOption {
@@ -23,38 +24,70 @@ export const FrostedSelect: React.FC<FrostedSelectProps> = ({
   placeholder = '请选择...'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [popoverPos, setPopoverPos] = useState<{ top: number; left: number; width: number }>({
+    top: 0,
+    left: 0,
+    width: 0
+  });
 
   const selectedOption = options.find((opt) => opt.value === value);
 
+  const updatePosition = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setPopoverPos({
+        top: rect.bottom + 6,
+        left: rect.left,
+        width: rect.width
+      });
+    }
+  };
+
+  const handleToggle = () => {
+    if (!isOpen) {
+      updatePosition();
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  };
+
   useEffect(() => {
+    if (!isOpen) return;
+
+    const handleScrollOrResize = () => {
+      updatePosition();
+    };
+
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        triggerRef.current &&
+        !triggerRef.current.contains(e.target as Node) &&
+        !(e.target as HTMLElement)?.closest('.frosted-select-portal')
+      ) {
         setIsOpen(false);
       }
     };
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
+
+    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    document.addEventListener('mousedown', handleClickOutside);
+
     return () => {
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: 'relative',
-        width: typeof width === 'number' ? `${width}px` : width,
-        userSelect: 'none',
-        zIndex: isOpen ? 1000 : 1
-      }}
-    >
+    <div style={{ position: 'relative', width: typeof width === 'number' ? `${width}px` : width, userSelect: 'none' }}>
       {/* Trigger Button */}
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className="frosted-btn"
         style={{
           width: '100%',
@@ -88,71 +121,73 @@ export const FrostedSelect: React.FC<FrostedSelectProps> = ({
         />
       </button>
 
-      {/* Frosted Dropdown Popover (Rendered above everything) */}
-      {isOpen && (
-        <div
-          className="animate-ios-spring"
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            left: 0,
-            width: '100%',
-            maxHeight: '220px',
-            overflowY: 'auto',
-            borderRadius: '14px',
-            padding: '5px',
-            boxSizing: 'border-box',
-            background: 'var(--glass-surface-active)',
-            backdropFilter: 'blur(32px) saturate(190%)',
-            WebkitBackdropFilter: 'blur(32px) saturate(190%)',
-            zIndex: 99999,
-            boxShadow: '0 12px 36px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.15)',
-            border: '1px solid var(--glass-border-hover)'
-          }}
-        >
-          {options.map((option) => {
-            const isSelected = option.value === value;
-            return (
-              <div
-                key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '8px 12px',
-                  borderRadius: '10px',
-                  fontSize: '12px',
-                  fontWeight: isSelected ? 600 : 400,
-                  color: isSelected ? '#ffffff' : 'var(--text-primary)',
-                  background: isSelected ? 'var(--accent-color)' : 'transparent',
-                  cursor: 'pointer',
-                  transition: 'background 0.15s ease'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.background = 'var(--glass-surface-hover)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.background = 'transparent';
-                  }
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {option.icon}
-                  <span>{option.label}</span>
+      {/* Popover rendered via React Portal to Document Body (100% Immune to Stacking Context Issues) */}
+      {isOpen &&
+        createPortal(
+          <div
+            className="frosted-select-portal animate-ios-spring"
+            style={{
+              position: 'fixed',
+              top: `${popoverPos.top}px`,
+              left: `${popoverPos.left}px`,
+              width: `${popoverPos.width}px`,
+              maxHeight: '230px',
+              overflowY: 'auto',
+              borderRadius: '14px',
+              padding: '5px',
+              boxSizing: 'border-box',
+              background: 'var(--bg-app)',
+              backdropFilter: 'blur(36px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(36px) saturate(200%)',
+              zIndex: 999999,
+              boxShadow: '0 16px 40px rgba(0, 0, 0, 0.35), 0 2px 10px rgba(0, 0, 0, 0.15)',
+              border: '1px solid var(--glass-border-hover)'
+            }}
+          >
+            {options.map((option) => {
+              const isSelected = option.value === value;
+              return (
+                <div
+                  key={option.value}
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                    fontWeight: isSelected ? 600 : 400,
+                    color: isSelected ? '#ffffff' : 'var(--text-primary)',
+                    background: isSelected ? 'var(--accent-color)' : 'transparent',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.background = 'var(--glass-surface-hover)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.background = 'transparent';
+                    }
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {option.icon}
+                    <span>{option.label}</span>
+                  </div>
+                  {isSelected && <Check size={13} />}
                 </div>
-                {isSelected && <Check size={13} />}
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

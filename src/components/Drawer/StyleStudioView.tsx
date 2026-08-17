@@ -1,5 +1,6 @@
+import React from 'react';
 import { ColorThemePreset, ThemeConfig } from '../../types/reader';
-import { Sun, Moon, BookOpen, Terminal, Ghost, Type, Layers, Eye } from 'lucide-react';
+import { Sun, Moon, BookOpen, Terminal, Ghost, Type, Layers, Eye, Trees } from 'lucide-react';
 import { FrostedSelect } from '../FrostedSelect';
 
 interface StyleStudioViewProps {
@@ -12,9 +13,10 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
   onUpdateTheme
 }) => {
   const presets: { id: ColorThemePreset; label: string; icon: React.ReactNode }[] = [
-    { id: 'day-glass', label: '昼间通透', icon: <Sun size={14} /> },
     { id: 'dark-oled', label: '暗夜深邃', icon: <Moon size={14} /> },
-    { id: 'parchment', label: '纸质护眼', icon: <BookOpen size={14} /> },
+    { id: 'day-glass', label: '昼间通透', icon: <Sun size={14} /> },
+    { id: 'parchment', label: '暖木羊皮', icon: <BookOpen size={14} /> },
+    { id: 'forest', label: '幽夜墨绿', icon: <Trees size={14} /> },
     { id: 'hacker', label: '黑客矩阵', icon: <Terminal size={14} /> },
     { id: 'stealth-pure', label: '极致隐形', icon: <Ghost size={14} /> }
   ];

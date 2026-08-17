@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bookmark } from '../../types/reader';
-import { Bookmark as BookmarkIcon, Trash2, Clock, ChevronRight } from 'lucide-react';
+import { Bookmark as BookmarkIcon, Trash2, Clock, ChevronRight, Download } from 'lucide-react';
 
 interface BookmarksViewProps {
   bookmarks: Bookmark[];
@@ -17,6 +17,31 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
 }) => {
   const currentBookBookmarks = bookmarks.filter((b) => !activeBookId || b.bookId === activeBookId);
 
+  const handleExportMarkdown = () => {
+    if (currentBookBookmarks.length === 0) {
+      alert('当前没有可导出的书签');
+      return;
+    }
+
+    let md = `# LiquidReader 读书笔记与摘录\n\n`;
+    md += `> 导出时间: ${new Date().toLocaleString()}\n`;
+    md += `> 摘录条数: ${currentBookBookmarks.length} 条\n\n---\n\n`;
+
+    currentBookBookmarks.forEach((bm, i) => {
+      md += `### ${i + 1}. ${bm.chapterTitle}\n\n`;
+      md += `> ${bm.selectedText}\n\n`;
+      md += `*记录于: ${new Date(bm.timestamp).toLocaleString()}*\n\n---\n\n`;
+    });
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Reading_Notes_${Date.now()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px' }}>
@@ -24,6 +49,18 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
           <BookmarkIcon size={14} style={{ color: 'var(--accent-color)' }} />
           <span>本书书签 ({currentBookBookmarks.length})</span>
         </div>
+
+        {currentBookBookmarks.length > 0 && (
+          <button
+            onClick={handleExportMarkdown}
+            className="frosted-btn"
+            style={{ padding: '4px 10px', fontSize: '11px', borderRadius: '9999px' }}
+            title="导出为 Markdown 读书笔记"
+          >
+            <Download size={12} />
+            <span>导出笔记 (.md)</span>
+          </button>
+        )}
       </div>
 
       <div

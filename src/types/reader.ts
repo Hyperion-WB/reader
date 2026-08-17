@@ -88,7 +88,7 @@ export interface SearchResultItem {
 
 export type GlassOpacityLevel = 'l0' | 'l1' | 'l2' | 'l3'; // L0: transparent, L1: 25%, L2: 55%, L3: 85%
 
-export type ColorThemePreset = 'day-glass' | 'dark-oled' | 'parchment' | 'hacker' | 'stealth-pure';
+export type ColorThemePreset = 'day-glass' | 'dark-oled' | 'parchment' | 'forest' | 'hacker' | 'stealth-pure';
 
 export interface ThemeConfig {
   glassLevel: GlassOpacityLevel;

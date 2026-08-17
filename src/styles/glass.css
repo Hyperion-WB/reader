@@ -29,23 +29,23 @@
   --font-mono: "JetBrains Mono", "SF Mono", "Consolas", "Courier New", monospace;
 }
 
-/* Light Translucent Frosted Pearl Theme (通透珍珠白磨砂，清晰对比度) */
+/* Light Translucent Frosted Pearl Theme (通透珍珠白磨砂) */
 .theme-day-glass {
-  --bg-app: rgba(240, 244, 250, 0.65);
-  --glass-surface: rgba(255, 255, 255, 0.6);
-  --glass-surface-hover: rgba(255, 255, 255, 0.85);
-  --glass-surface-active: rgba(255, 255, 255, 0.95);
-  --glass-border: rgba(0, 0, 0, 0.09);
-  --glass-border-hover: rgba(0, 0, 0, 0.18);
-  --glass-shadow: 0 14px 36px -4px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --bg-app: rgba(245, 247, 252, 0.68);
+  --glass-surface: rgba(255, 255, 255, 0.65);
+  --glass-surface-hover: rgba(255, 255, 255, 0.88);
+  --glass-surface-active: #ffffff;
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-hover: rgba(0, 0, 0, 0.16);
+  --glass-shadow: 0 14px 36px -4px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03);
 
   --text-primary: #0f172a;
-  --text-secondary: #334155;
+  --text-secondary: #475569;
   --text-muted: #64748b;
 
-  --accent-color: #0071e3;
-  --accent-gradient: linear-gradient(135deg, #0071e3 0%, #005bb5 100%);
-  --accent-glow: 0 4px 16px rgba(0, 113, 227, 0.32);
+  --accent-color: #3b82f6;
+  --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --accent-glow: 0 4px 16px rgba(59, 130, 246, 0.32);
 }
 
 /* Dark OLED Obsidian Theme */
@@ -63,25 +63,41 @@
   --accent-gradient: linear-gradient(135deg, #0a84ff 0%, #0066cc 100%);
 }
 
-/* Eye-care Parchment Warm Glass */
+/* Eye-care Warm Parchment (雅致护眼羊皮纸 - 柔和暖木拿铁配色) */
 .theme-parchment {
-  --bg-app: rgba(246, 239, 227, 0.72);
-  --glass-surface: rgba(255, 250, 240, 0.65);
+  --bg-app: rgba(247, 242, 232, 0.72);
+  --glass-surface: rgba(255, 255, 255, 0.55);
   --glass-surface-hover: rgba(255, 255, 255, 0.85);
   --glass-surface-active: #ffffff;
-  --glass-border: rgba(180, 155, 120, 0.25);
-  --glass-border-hover: rgba(180, 155, 120, 0.45);
-  --text-primary: #271f18;
-  --text-secondary: #5c4738;
-  --text-muted: #8d7360;
-  --accent-color: #b46b38;
-  --accent-gradient: linear-gradient(135deg, #b46b38 0%, #8f4e22 100%);
-  --accent-glow: 0 4px 16px rgba(180, 107, 56, 0.32);
+  --glass-border: rgba(160, 130, 95, 0.2);
+  --glass-border-hover: rgba(160, 130, 95, 0.38);
+  --text-primary: #292524;
+  --text-secondary: #57534e;
+  --text-muted: #8c827a;
+  --accent-color: #d97706;
+  --accent-gradient: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  --accent-glow: 0 4px 16px rgba(217, 119, 6, 0.32);
+}
+
+/* Forest Mist Jade (幽夜墨绿护眼) */
+.theme-forest {
+  --bg-app: rgba(10, 22, 16, 0.72);
+  --glass-surface: rgba(255, 255, 255, 0.08);
+  --glass-surface-hover: rgba(255, 255, 255, 0.16);
+  --glass-surface-active: rgba(255, 255, 255, 0.24);
+  --glass-border: rgba(16, 185, 129, 0.25);
+  --glass-border-hover: rgba(16, 185, 129, 0.45);
+  --text-primary: #f0fdf4;
+  --text-secondary: #a7f3d0;
+  --text-muted: #6ee7b7;
+  --accent-color: #10b981;
+  --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --accent-glow: 0 4px 16px rgba(16, 185, 129, 0.35);
 }
 
 /* Hacker Terminal Glass */
 .theme-hacker {
-  --bg-app: rgba(6, 12, 8, 0.75);
+  --bg-app: rgba(6, 12, 8, 0.78);
   --glass-surface: rgba(34, 197, 94, 0.08);
   --glass-surface-hover: rgba(34, 197, 94, 0.16);
   --glass-surface-active: rgba(34, 197, 94, 0.25);
@@ -92,9 +108,10 @@
   --text-muted: rgba(34, 197, 94, 0.65);
   --accent-color: #22c55e;
   --accent-gradient: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  --accent-glow: 0 4px 16px rgba(34, 197, 94, 0.35);
 }
 
-/* Pure Stealth Transparent (摸鱼背景纯透，文字适度灰度) */
+/* Pure Stealth Transparent (摸鱼背景纯透) */
 .theme-stealth-pure {
   --bg-app: transparent;
   --glass-surface: rgba(0, 0, 0, 0.04);
@@ -105,7 +122,9 @@
   --text-primary: rgba(148, 163, 184, 0.9);
   --text-secondary: rgba(148, 163, 184, 0.6);
   --text-muted: rgba(148, 163, 184, 0.35);
-  --accent-color: rgba(148, 163, 184, 0.9);
+  --accent-color: #3b82f6;
+  --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --accent-glow: 0 4px 14px rgba(59, 130, 246, 0.3);
 }
 
 /* Glass Level Presets */

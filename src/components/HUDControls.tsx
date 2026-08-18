@@ -13,6 +13,8 @@ import {
 import { ThemeConfig } from '../types/reader';
 
 interface HUDControlsProps {
+  isVisible?: boolean;
+  onHoverChange?: (hovered: boolean) => void;
   currentChapterIndex: number;
   totalChapters: number;
   progressPercent: number;
@@ -30,6 +32,8 @@ interface HUDControlsProps {
 }
 
 export const HUDControls: React.FC<HUDControlsProps> = ({
+  isVisible = true,
+  onHoverChange,
   currentChapterIndex,
   totalChapters,
   wordCount,
@@ -58,30 +62,36 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
     <div
       style={{
         position: 'absolute',
-        bottom: 'clamp(20px, 3.5vh, 30px)',
+        bottom: 'clamp(28px, 4.5vh, 42px)',
         left: 0,
         right: 0,
         display: 'flex',
         justifyContent: 'center',
         pointerEvents: 'none',
         zIndex: 500,
-        padding: '0 12px',
+        padding: '0 14px',
         boxSizing: 'border-box'
       }}
     >
       <div
-        className="ios-floating-bar animate-hud-float tauri-no-drag"
+        className="ios-floating-bar tauri-no-drag"
+        onMouseEnter={() => onHoverChange?.(true)}
+        onMouseLeave={() => onHoverChange?.(false)}
         style={{
-          pointerEvents: 'auto',
+          pointerEvents: isVisible ? 'auto' : 'none',
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(24px) scale(0.94)',
           display: 'flex',
           flexDirection: isNarrowScreen ? 'column' : 'row',
           alignItems: 'center',
           gap: isNarrowScreen ? '6px' : 'clamp(3px, 1vw, 7px)',
           padding: isNarrowScreen ? '8px 14px' : '6px clamp(8px, 1.2vw, 14px)',
-          maxWidth: 'calc(100vw - 24px)',
+          maxWidth: 'calc(100vw - 28px)',
           borderRadius: isNarrowScreen ? '20px' : '9999px',
-          boxShadow: '0 16px 44px rgba(0, 0, 0, 0.42), 0 2px 10px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
-          transition: 'all 0.3s cubic-bezier(0.2, 0.9, 0.1, 1)'
+          boxShadow: isVisible
+            ? '0 18px 48px rgba(0, 0, 0, 0.44), 0 2px 10px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25)'
+            : 'none',
+          transition: 'all 0.35s cubic-bezier(0.2, 0.9, 0.1, 1)'
         }}
       >
         {/* Row 1: Chapter Slider & Prev / Next */}

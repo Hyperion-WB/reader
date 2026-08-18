@@ -122,12 +122,13 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
       <div
         data-tauri-drag-region="true"
         onMouseDown={(e) => {
-          e.preventDefault();
-          windowControls.startDragging();
+          if (e.button === 0) {
+            windowControls.startDragging();
+          }
         }}
         style={{
           width: '100%',
-          height: '20px',
+          height: '22px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -139,28 +140,15 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
         title="按住横条或顶栏任意空白处拖动窗口"
       >
         <div
-          data-tauri-drag-region="true"
           style={{
-            width: '56px',
+            width: '60px',
             height: '5px',
             borderRadius: '9999px',
             background: 'var(--text-muted)',
-            opacity: 0.6,
+            opacity: 0.65,
             boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
             transition: 'all 0.2s ease',
-            cursor: 'move'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.opacity = '1';
-            e.currentTarget.style.background = 'var(--accent-color)';
-            e.currentTarget.style.width = '72px';
-            e.currentTarget.style.boxShadow = 'var(--accent-glow)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = '0.6';
-            e.currentTarget.style.background = 'var(--text-muted)';
-            e.currentTarget.style.width = '56px';
-            e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
+            pointerEvents: 'none'
           }}
         />
       </div>

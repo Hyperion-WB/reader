@@ -65,10 +65,14 @@ export const windowControls = {
   startDragging: async () => {
     if (isTauri()) {
       try {
-        await invoke('app_start_drag');
-      } catch {
         const win = getCurrentWindow();
         await win.startDragging();
+      } catch {
+        try {
+          await invoke('app_start_drag');
+        } catch (err) {
+          console.warn('Failed to start dragging window:', err);
+        }
       }
     }
   },

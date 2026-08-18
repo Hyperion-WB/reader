@@ -272,16 +272,34 @@ export const MainReader: React.FC<MainReaderProps> = ({
     ? (currentChapterContent.match(new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')) || []).length
     : 0;
 
+  const hudHideTimerRef = useRef<any>(null);
+  const isHudHoveredRef = useRef(false);
+
+  const handleMouseMove = () => {
+    setShowHUD(true);
+    if (hudHideTimerRef.current) clearTimeout(hudHideTimerRef.current);
+    hudHideTimerRef.current = setTimeout(() => {
+      if (!isHudHoveredRef.current && !isAutoScrolling) {
+        setShowHUD(false);
+      }
+    }, 5000);
+  };
+
   return (
     <div
       style={{
         position: 'relative',
         width: '100%',
-        height: 'calc(100vh - 42px)',
+        height: '100%',
         overflow: 'hidden'
       }}
+      onMouseMove={handleMouseMove}
       onMouseEnter={() => setShowHUD(true)}
-      onMouseLeave={() => setShowHUD(false)}
+      onMouseLeave={() => {
+        if (!isAutoScrolling) {
+          setShowHUD(false);
+        }
+      }}
     >
       {/* In-Chapter Keyword Search Bar */}
       <ChapterSearchBar
@@ -520,28 +538,31 @@ export const MainReader: React.FC<MainReaderProps> = ({
         />
       )}
 
-      {/* Bottom Floating Hover HUD */}
-      {showHUD && (
-        <HUDControls
-          currentChapterIndex={book.currentChapterIndex}
-          totalChapters={book.chapters.length}
-          progressPercent={book.currentProgressPercent}
-          wordCount={wordCount}
-          onPrevChapter={onPrevChapter}
-          onNextChapter={onNextChapter}
-          onJumpChapter={onJumpChapter}
-          themeConfig={themeConfig}
-          onUpdateTheme={onUpdateTheme}
-          isTTSPlaying={isTTSPlaying}
-          onToggleTTS={() => {
-            if (isTTSPlaying) handleStopTTS();
-            else handleStartTTS();
-          }}
-          isAutoScrolling={isAutoScrolling}
-          onToggleAutoScroll={() => setIsAutoScrolling((prev) => !prev)}
-          onOpenShortcuts={() => setShowShortcutsModal(true)}
-        />
-      )}
+      {/* Bottom Floating Hover HUD with Silky Slide Animation */}
+      <HUDControls
+        isVisible={showHUD}
+        onHoverChange={(hovered) => {
+          isHudHoveredRef.current = hovered;
+          if (hovered) setShowHUD(true);
+        }}
+        currentChapterIndex={book.currentChapterIndex}
+        totalChapters={book.chapters.length}
+        progressPercent={book.currentProgressPercent}
+        wordCount={wordCount}
+        onPrevChapter={onPrevChapter}
+        onNextChapter={onNextChapter}
+        onJumpChapter={onJumpChapter}
+        themeConfig={themeConfig}
+        onUpdateTheme={onUpdateTheme}
+        isTTSPlaying={isTTSPlaying}
+        onToggleTTS={() => {
+          if (isTTSPlaying) handleStopTTS();
+          else handleStartTTS();
+        }}
+        isAutoScrolling={isAutoScrolling}
+        onToggleAutoScroll={() => setIsAutoScrolling((prev) => !prev)}
+        onOpenShortcuts={() => setShowShortcutsModal(true)}
+      />
 
       {/* Shortcuts Guide Modal */}
       <ShortcutsModal

@@ -10,8 +10,8 @@ export const WindowResizeHandles: React.FC = () => {
     windowControls.startResize(direction);
   };
 
-  const borderSize = '5px';
-  const cornerSize = '10px';
+  const borderSize = '3px';
+  const cornerSize = '8px';
 
   return (
     <>
@@ -25,7 +25,7 @@ export const WindowResizeHandles: React.FC = () => {
           right: cornerSize,
           height: borderSize,
           cursor: 'ns-resize',
-          zIndex: 999998,
+          zIndex: 8000,
           pointerEvents: 'auto'
         }}
       />
@@ -38,7 +38,7 @@ export const WindowResizeHandles: React.FC = () => {
           right: cornerSize,
           height: borderSize,
           cursor: 'ns-resize',
-          zIndex: 999998,
+          zIndex: 8000,
           pointerEvents: 'auto'
         }}
       />
@@ -51,7 +51,7 @@ export const WindowResizeHandles: React.FC = () => {
           left: 0,
           width: borderSize,
           cursor: 'ew-resize',
-          zIndex: 999998,
+          zIndex: 8000,
           pointerEvents: 'auto'
         }}
       />
@@ -64,7 +64,7 @@ export const WindowResizeHandles: React.FC = () => {
           right: 0,
           width: borderSize,
           cursor: 'ew-resize',
-          zIndex: 999998,
+          zIndex: 8000,
           pointerEvents: 'auto'
         }}
       />
@@ -79,7 +79,7 @@ export const WindowResizeHandles: React.FC = () => {
           width: cornerSize,
           height: cornerSize,
           cursor: 'nwse-resize',
-          zIndex: 999999,
+          zIndex: 8500,
           pointerEvents: 'auto'
         }}
       />
@@ -92,7 +92,7 @@ export const WindowResizeHandles: React.FC = () => {
           width: cornerSize,
           height: cornerSize,
           cursor: 'nesw-resize',
-          zIndex: 999999,
+          zIndex: 8500,
           pointerEvents: 'auto'
         }}
       />
@@ -105,7 +105,7 @@ export const WindowResizeHandles: React.FC = () => {
           width: cornerSize,
           height: cornerSize,
           cursor: 'nesw-resize',
-          zIndex: 999999,
+          zIndex: 8500,
           pointerEvents: 'auto'
         }}
       />
@@ -118,7 +118,7 @@ export const WindowResizeHandles: React.FC = () => {
           width: cornerSize,
           height: cornerSize,
           cursor: 'nwse-resize',
-          zIndex: 999999,
+          zIndex: 8500,
           pointerEvents: 'auto'
         }}
       />

@@ -108,10 +108,11 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
 
   return (
     <div
+      data-tauri-drag-region="true"
       style={{
         width: '100%',
         boxSizing: 'border-box',
-        zIndex: 1000,
+        zIndex: 9000,
         userSelect: 'none',
         display: 'flex',
         flexDirection: 'column'
@@ -120,42 +121,52 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
       {/* 1. Android / iPadOS Style Floating Window Top Drag Handle */}
       <div
         data-tauri-drag-region="true"
-        onMouseDown={() => windowControls.startDragging()}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          windowControls.startDragging();
+        }}
         style={{
           width: '100%',
-          height: '14px',
+          height: '20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          cursor: 'grab',
+          cursor: 'move',
           userSelect: 'none',
-          paddingTop: '2px',
+          paddingTop: '4px',
           boxSizing: 'border-box'
         }}
-        title="按住横条拖动窗口"
+        title="按住横条或顶栏任意空白处拖动窗口"
       >
         <div
           data-tauri-drag-region="true"
           style={{
-            width: '48px',
-            height: '4px',
+            width: '56px',
+            height: '5px',
             borderRadius: '9999px',
-            background: 'var(--glass-border)',
-            transition: 'background 0.2s ease, width 0.2s ease'
+            background: 'var(--text-muted)',
+            opacity: 0.6,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+            transition: 'all 0.2s ease',
+            cursor: 'move'
           }}
           onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = '1';
             e.currentTarget.style.background = 'var(--accent-color)';
-            e.currentTarget.style.width = '64px';
+            e.currentTarget.style.width = '72px';
+            e.currentTarget.style.boxShadow = 'var(--accent-glow)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'var(--glass-border)';
-            e.currentTarget.style.width = '48px';
+            e.currentTarget.style.opacity = '0.6';
+            e.currentTarget.style.background = 'var(--text-muted)';
+            e.currentTarget.style.width = '56px';
+            e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
           }}
         />
       </div>
 
       {/* 2. Frosted Floating Glass Navigation Bar */}
-      <div style={{ padding: '0 8px 4px 8px', width: '100%', boxSizing: 'border-box' }}>
+      <div data-tauri-drag-region="true" style={{ padding: '0 8px 6px 8px', width: '100%', boxSizing: 'border-box' }}>
         <div
           className="ios-floating-bar"
           data-tauri-drag-region="true"

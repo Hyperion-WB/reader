@@ -58,29 +58,29 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
     <div
       style={{
         position: 'absolute',
-        bottom: '16px',
+        bottom: 'clamp(20px, 3.5vh, 30px)',
         left: 0,
         right: 0,
         display: 'flex',
         justifyContent: 'center',
         pointerEvents: 'none',
         zIndex: 500,
-        padding: '0 8px',
+        padding: '0 12px',
         boxSizing: 'border-box'
       }}
     >
       <div
-        className="ios-floating-bar animate-ios-spring tauri-no-drag"
+        className="ios-floating-bar animate-hud-float tauri-no-drag"
         style={{
           pointerEvents: 'auto',
           display: 'flex',
           flexDirection: isNarrowScreen ? 'column' : 'row',
           alignItems: 'center',
           gap: isNarrowScreen ? '6px' : 'clamp(3px, 1vw, 7px)',
-          padding: isNarrowScreen ? '8px 12px' : '5px clamp(6px, 1.2vw, 12px)',
-          maxWidth: 'calc(100vw - 16px)',
+          padding: isNarrowScreen ? '8px 14px' : '6px clamp(8px, 1.2vw, 14px)',
+          maxWidth: 'calc(100vw - 24px)',
           borderRadius: isNarrowScreen ? '20px' : '9999px',
-          boxShadow: '0 12px 36px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 16px 44px rgba(0, 0, 0, 0.42), 0 2px 10px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
           transition: 'all 0.3s cubic-bezier(0.2, 0.9, 0.1, 1)'
         }}
       >

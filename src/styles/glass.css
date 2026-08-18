@@ -331,6 +331,24 @@ body, html {
   animation: iosSpringIn 0.24s var(--ios-spring) forwards;
 }
 
+@keyframes hudFloatIn {
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.92);
+  }
+  65% {
+    transform: translateY(-4px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-hud-float {
+  animation: hudFloatIn 0.38s cubic-bezier(0.2, 0.9, 0.1, 1) forwards;
+}
+
 @keyframes chapterFadeIn {
   0% {
     opacity: 0.35;

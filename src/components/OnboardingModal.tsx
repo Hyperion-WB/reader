@@ -60,8 +60,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
               height: '46px',
               borderRadius: '13px',
               objectFit: 'cover',
-              boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
-              border: '1px solid var(--glass-border)',
+              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
+              border: 'none',
               flexShrink: 0
             }}
           />

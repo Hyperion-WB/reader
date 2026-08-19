@@ -25,8 +25,8 @@ export const CuteAppIcon: React.FC<CuteAppIconProps> = ({ size = 26, className =
         borderRadius: `${Math.round(size * 0.28)}px`,
         overflow: 'hidden',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-        border: '1px solid var(--glass-border)',
-        background: '#fef3c7',
+        border: 'none',
+        background: 'transparent',
         transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease',
         ...style
       }}

@@ -54,7 +54,7 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
           style={{ flex: 1, padding: '8px 12px', borderRadius: '9999px', fontSize: '12.5px' }}
         >
           <Upload size={13} />
-          <span>导入本地 (TXT / EPUB)</span>
+          <span>导入本地 (TXT/EPUB/漫画/MD)</span>
         </button>
         <button
           onClick={onOpenSearch}
@@ -147,13 +147,14 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
 
       {/* Book List / Grid / Minimal */}
       <div
+        className="smooth-scroll"
         style={{
           flex: 1,
-          overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
           gap: viewMode === 'minimal' ? '4px' : '8px',
-          padding: '4px 2px 12px 2px'
+          padding: '4px 2px 36px 2px',
+          boxSizing: 'border-box'
         }}
       >
         {filteredBooks.length === 0 ? (
@@ -246,18 +247,28 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Quick Actions */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  {/* Quick Actions - Pixel-Perfect Axis Alignment */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setEditingCoverBook(book);
                       }}
                       className="frosted-btn"
-                      style={{ padding: '4px 6px', borderRadius: '9999px' }}
-                      title="更换封面 / 隐蔽书皮"
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        padding: 0,
+                        borderRadius: '50%',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}
+                      data-tooltip="更换封面 / 隐蔽书皮"
+                      data-tooltip-pos="left"
                     >
-                      <Palette size={12} />
+                      <Palette size={13} />
                     </button>
                     <button
                       onClick={(e) => {
@@ -266,10 +277,30 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
                           onDeleteBook(book.id);
                         }
                       }}
-                      style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}
-                      title="删除"
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                      className="frosted-btn"
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        padding: 0,
+                        borderRadius: '50%',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--text-muted)',
+                        flexShrink: 0
+                      }}
+                      data-tooltip="从书架移除"
+                      data-tooltip-pos="left"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = '#ef4444';
+                        e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+                        e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = 'var(--text-muted)';
+                        e.currentTarget.style.background = 'var(--glass-surface)';
+                        e.currentTarget.style.borderColor = 'var(--glass-border)';
+                      }}
                     >
                       <Trash2 size={13} />
                     </button>
@@ -378,8 +409,8 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                {/* Actions - Matching Circular Buttons */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', gap: '6px' }}>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -387,12 +418,31 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
                         onDeleteBook(book.id);
                       }
                     }}
-                    style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px' }}
-                    title="删除"
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                    className="frosted-btn"
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      padding: 0,
+                      borderRadius: '50%',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--text-muted)'
+                    }}
+                    data-tooltip="从书架移除"
+                    data-tooltip-pos="left"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#ef4444';
+                      e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+                      e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = 'var(--text-muted)';
+                      e.currentTarget.style.background = 'var(--glass-surface)';
+                      e.currentTarget.style.borderColor = 'var(--glass-border)';
+                    }}
                   >
-                    <Trash2 size={13} />
+                    <Trash2 size={12} />
                   </button>
 
                   <button
@@ -401,10 +451,19 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
                       setEditingCoverBook(book);
                     }}
                     className="frosted-btn"
-                    style={{ padding: '3px 6px', borderRadius: '9999px', fontSize: '10.5px' }}
-                    title="更换封面"
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      padding: 0,
+                      borderRadius: '50%',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    data-tooltip="更换封面 / 隐蔽书皮"
+                    data-tooltip-pos="left"
                   >
-                    <Palette size={11} />
+                    <Palette size={12} />
                   </button>
                 </div>
               </div>

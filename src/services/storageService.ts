@@ -16,6 +16,7 @@ export const defaultThemeConfig: ThemeConfig = {
   customGlassOpacity: 0.65,
   glassBlurRadius: 28,
   themePreset: 'dark-oled',
+  backgroundPreset: 'default',
   fontSize: 16,
   lineHeight: 1.8,
   letterSpacing: 0.5,

@@ -150,6 +150,80 @@ export const MainReader: React.FC<MainReaderProps> = ({
     };
   }, [isAutoScrolling, autoScrollStep]);
 
+  const paragraphs = currentChapterContent
+    ? currentChapterContent
+        .split('\n')
+        .map((p) => p.trim())
+        .filter((p) => p.length > 0)
+    : [];
+
+  const wordCount = currentChapterContent ? currentChapterContent.replace(/\s+/g, '').length : 0;
+
+  // Pagination Engine for Paginated Mode
+  const charsPerPage = Math.max(250, Math.floor(650 * (16 / Math.max(12, themeConfig.fontSize))));
+
+  const pages: string[][] = React.useMemo(() => {
+    if (paragraphs.length === 0) return [['(本章暂无内容)']];
+    const result: string[][] = [];
+    let currentBatch: string[] = [];
+    let currentBatchLen = 0;
+
+    for (const para of paragraphs) {
+      if (currentBatchLen + para.length > charsPerPage && currentBatch.length > 0) {
+        result.push(currentBatch);
+        currentBatch = [para];
+        currentBatchLen = para.length;
+      } else {
+        currentBatch.push(para);
+        currentBatchLen += para.length;
+      }
+    }
+    if (currentBatch.length > 0) {
+      result.push(currentBatch);
+    }
+    return result.length > 0 ? result : [['(本章暂无内容)']];
+  }, [paragraphs, charsPerPage]);
+
+  const [currentPage, setCurrentPage] = useState<number>(0);
+
+  // Clamp current page on content changes
+  useEffect(() => {
+    if (currentPage >= pages.length) {
+      setCurrentPage(Math.max(0, pages.length - 1));
+    }
+  }, [pages.length]);
+
+  // Reset page to 0 when switching chapters
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [book.currentChapterIndex]);
+
+  const handleNextPage = useCallback(() => {
+    if (currentPage < pages.length - 1) {
+      const nextP = currentPage + 1;
+      setCurrentPage(nextP);
+      const progress = Math.round(((nextP + 1) / pages.length) * 100);
+      onUpdateBookProgress(book.currentChapterIndex, progress);
+    } else {
+      if (book.currentChapterIndex < book.chapters.length - 1) {
+        onNextChapter();
+      }
+    }
+  }, [currentPage, pages.length, book.currentChapterIndex, book.chapters.length, onNextChapter, onUpdateBookProgress]);
+
+  const handlePrevPage = useCallback(() => {
+    if (currentPage > 0) {
+      const prevP = currentPage - 1;
+      setCurrentPage(prevP);
+      const progress = Math.round(((prevP + 1) / pages.length) * 100);
+      onUpdateBookProgress(book.currentChapterIndex, progress);
+    } else {
+      if (book.currentChapterIndex > 0) {
+        onPrevChapter();
+      }
+    }
+  }, [currentPage, pages.length, book.currentChapterIndex, onPrevChapter, onUpdateBookProgress]);
+
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -162,23 +236,45 @@ export const MainReader: React.FC<MainReaderProps> = ({
         setShowChapterSearch((prev) => !prev);
       } else if (e.code === 'Space') {
         e.preventDefault();
-        setIsAutoScrolling((prev) => !prev);
+        if (themeConfig.pageMode === 'paginated') {
+          handleNextPage();
+        } else {
+          setIsAutoScrolling((prev) => !prev);
+        }
       } else if (e.key === '?') {
         setShowShortcutsModal((prev) => !prev);
-      } else if (e.key === 'ArrowRight' || e.key === ']' || e.key === 'j' || e.key === 'J') {
+      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        e.preventDefault();
+        if (themeConfig.pageMode === 'paginated') {
+          handleNextPage();
+        } else {
+          onNextChapter();
+        }
+      } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        e.preventDefault();
+        if (themeConfig.pageMode === 'paginated') {
+          handlePrevPage();
+        } else {
+          onPrevChapter();
+        }
+      } else if (e.key === ']' || e.key === 'j' || e.key === 'J') {
         e.preventDefault();
         onNextChapter();
-      } else if (e.key === 'ArrowLeft' || e.key === '[' || e.key === 'k' || e.key === 'K') {
+      } else if (e.key === '[' || e.key === 'k' || e.key === 'K') {
         e.preventDefault();
         onPrevChapter();
       } else if (e.key === 'PageDown') {
         e.preventDefault();
-        if (containerRef.current) {
+        if (themeConfig.pageMode === 'paginated') {
+          handleNextPage();
+        } else if (containerRef.current) {
           containerRef.current.scrollBy({ top: window.innerHeight * 0.75, behavior: 'smooth' });
         }
       } else if (e.key === 'PageUp') {
         e.preventDefault();
-        if (containerRef.current) {
+        if (themeConfig.pageMode === 'paginated') {
+          handlePrevPage();
+        } else if (containerRef.current) {
           containerRef.current.scrollBy({ top: -window.innerHeight * 0.75, behavior: 'smooth' });
         }
       } else if (e.key === 'ArrowDown') {
@@ -200,7 +296,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onNextChapter, onPrevChapter, onUpdateTheme, themeConfig]);
+  }, [onNextChapter, onPrevChapter, onUpdateTheme, themeConfig, handleNextPage, handlePrevPage]);
 
   // Handle Text Selection for Bookmarking
   const handleMouseUp = () => {
@@ -258,15 +354,6 @@ export const MainReader: React.FC<MainReaderProps> = ({
     setIsTTSActive(false);
   };
 
-  const paragraphs = currentChapterContent
-    ? currentChapterContent
-        .split('\n')
-        .map((p) => p.trim())
-        .filter((p) => p.length > 0)
-    : [];
-
-  const wordCount = currentChapterContent ? currentChapterContent.replace(/\s+/g, '').length : 0;
-
   // Calculate search matches
   const totalSearchMatches = searchQuery.trim()
     ? (currentChapterContent.match(new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')) || []).length
@@ -285,13 +372,47 @@ export const MainReader: React.FC<MainReaderProps> = ({
     }, 5000);
   };
 
+  // Dynamic Reading Background Computation
+  const getReadingBackgroundStyle = (): { bg: string; color?: string } => {
+    switch (themeConfig.backgroundPreset) {
+      case 'parchment':
+        return { bg: '#f6f1e5', color: '#382c1e' };
+      case 'rice-paper':
+        return { bg: '#f7f6f2', color: '#27272a' };
+      case 'eyecare-green':
+        return { bg: '#dceada', color: '#1f3a24' };
+      case 'warm-latte':
+        return { bg: '#f4ece1', color: '#3d352e' };
+      case 'slate-gray':
+        return { bg: '#262b36', color: '#e2e8f0' };
+      case 'kraft-wood':
+        return { bg: '#e8dbca', color: '#332617' };
+      case 'navy-night':
+        return { bg: '#0b1120', color: '#cbd5e1' };
+      case 'pure-black':
+        return { bg: '#000000', color: '#a1a1aa' };
+      case 'custom':
+        return {
+          bg: themeConfig.customBgColor || 'transparent',
+          color: themeConfig.textColor || 'var(--text-primary)'
+        };
+      case 'default':
+      default:
+        return { bg: 'transparent', color: 'var(--text-primary)' };
+    }
+  };
+
+  const readingBg = getReadingBackgroundStyle();
+
   return (
     <div
       style={{
         position: 'relative',
         width: '100%',
         height: '100%',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        background: readingBg.bg,
+        transition: 'background 0.3s ease, color 0.3s ease'
       }}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setShowHUD(true)}
@@ -301,6 +422,25 @@ export const MainReader: React.FC<MainReaderProps> = ({
         }
       }}
     >
+      {/* Custom Wallpaper Layer if active */}
+      {themeConfig.backgroundPreset === 'custom' && themeConfig.customBgImage && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `url(${themeConfig.customBgImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: themeConfig.bgImageOpacity ?? 0.85,
+            filter: `blur(${themeConfig.bgImageBlur ?? 4}px)`,
+            transform: 'scale(1.05)',
+            pointerEvents: 'none',
+            zIndex: 0,
+            transition: 'opacity 0.3s ease, filter 0.3s ease'
+          }}
+        />
+      )}
+
       {/* In-Chapter Keyword Search Bar */}
       <ChapterSearchBar
         isOpen={showChapterSearch}
@@ -325,6 +465,8 @@ export const MainReader: React.FC<MainReaderProps> = ({
         onScroll={handleScroll}
         onMouseUp={handleMouseUp}
         style={{
+          position: 'relative',
+          zIndex: 1,
           width: '100%',
           height: '100%',
           overflowY: 'auto',
@@ -334,7 +476,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
           fontSize: `${themeConfig.fontSize}px`,
           lineHeight: themeConfig.lineHeight,
           letterSpacing: `${themeConfig.letterSpacing}px`,
-          color: 'var(--text-primary)'
+          color: readingBg.color || 'var(--text-primary)'
         }}
       >
         {/* Chapter Title */}
@@ -353,8 +495,42 @@ export const MainReader: React.FC<MainReaderProps> = ({
           {currentChapter.title}
         </div>
 
-        {/* Content Body with Realtime Search Match Highlighting */}
-        {loadingContent ? (
+        {/* Comic / Manga Rendering Canvas or Text Paragraphs */}
+        {(book.isComic || currentChapter.isComic || (currentChapter.comicImages && currentChapter.comicImages.length > 0)) ? (
+          <div className="animate-chapter-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', maxWidth: '900px', margin: '0 auto' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>高清漫画画卷 (共 {currentChapter.comicImages?.length || 0} 页)</span>
+              <span>·</span>
+              <span>支持平滑自动滚屏</span>
+            </div>
+            {currentChapter.comicImages?.map((imgSrc, imgIdx) => (
+              <div
+                key={imgIdx}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
+                  background: 'rgba(0,0,0,0.2)'
+                }}
+              >
+                <img
+                  src={imgSrc}
+                  alt={`第 ${imgIdx + 1} 页`}
+                  loading="lazy"
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                    display: 'block',
+                    borderRadius: '8px'
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        ) : loadingContent ? (
           <div
             style={{
               display: 'flex',
@@ -369,7 +545,135 @@ export const MainReader: React.FC<MainReaderProps> = ({
             <Loader2 size={32} className="animate-spin" />
             <div style={{ fontSize: '13px' }}>正在为您加载章节内容...</div>
           </div>
+        ) : themeConfig.pageMode === 'paginated' ? (
+          /* 2. Paginated Flip View Mode */
+          <div key={`page-${book.currentChapterIndex}-${currentPage}`} className="animate-chapter-fade" style={{ maxWidth: '860px', margin: '0 auto', minHeight: 'calc(100% - 80px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
+            {/* Clickable Paging Hotspots for Left/Right halves */}
+            <div
+              onClick={handlePrevPage}
+              data-tooltip="上一页 (A / ←)"
+              data-tooltip-pos="right"
+              style={{
+                position: 'fixed',
+                top: '60px',
+                bottom: '80px',
+                left: 0,
+                width: '18%',
+                zIndex: 50,
+                cursor: 'w-resize',
+                opacity: 0
+              }}
+            />
+            <div
+              onClick={handleNextPage}
+              data-tooltip="下一页 (D / → / 空格)"
+              data-tooltip-pos="left"
+              style={{
+                position: 'fixed',
+                top: '60px',
+                bottom: '80px',
+                right: 0,
+                width: '18%',
+                zIndex: 50,
+                cursor: 'e-resize',
+                opacity: 0
+              }}
+            />
+
+            {/* Current Page Content Paragraphs */}
+            <div>
+              {(pages[currentPage] || []).map((para, idx) => {
+                if (searchQuery.trim().length > 0) {
+                  const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                  const parts = para.split(regex);
+                  return (
+                    <p
+                      key={idx}
+                      style={{
+                        marginBottom: `${themeConfig.paragraphSpacing}px`,
+                        textIndent: `${themeConfig.paragraphIndent}em`,
+                        textAlign: 'justify'
+                      }}
+                    >
+                      {parts.map((part, pIdx) =>
+                        regex.test(part) ? (
+                          <mark
+                            key={pIdx}
+                            style={{
+                              background: '#fef08a',
+                              color: '#713f12',
+                              padding: '1px 3px',
+                              borderRadius: '4px',
+                              fontWeight: 600
+                            }}
+                          >
+                            {part}
+                          </mark>
+                        ) : (
+                          part
+                        )
+                      )}
+                    </p>
+                  );
+                }
+
+                return (
+                  <p
+                    key={idx}
+                    style={{
+                      marginBottom: `${themeConfig.paragraphSpacing}px`,
+                      textIndent: `${themeConfig.paragraphIndent}em`,
+                      textAlign: 'justify'
+                    }}
+                  >
+                    {para}
+                  </p>
+                );
+              })}
+            </div>
+
+            {/* Bottom Page Navigation Controls */}
+            <div
+              className="tauri-no-drag"
+              style={{
+                marginTop: '36px',
+                paddingTop: '16px',
+                borderTop: '1px solid var(--glass-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '12px',
+                color: 'var(--text-muted)',
+                userSelect: 'none'
+              }}
+            >
+              <button
+                onClick={handlePrevPage}
+                className="frosted-btn"
+                style={{ padding: '5px 12px', borderRadius: '9999px', fontSize: '11.5px' }}
+              >
+                <span>‹ 上一页</span>
+              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                  第 {currentPage + 1} / {pages.length} 页
+                </span>
+                <span>·</span>
+                <span>进度 {Math.round(((currentPage + 1) / pages.length) * 100)}%</span>
+              </div>
+
+              <button
+                onClick={handleNextPage}
+                className="frosted-btn"
+                style={{ padding: '5px 12px', borderRadius: '9999px', fontSize: '11.5px' }}
+              >
+                <span>下一页 ›</span>
+              </button>
+            </div>
+          </div>
         ) : (
+          /* 3. Continuous Vertical Scroll Mode */
           <div key={currentChapter.index} className="animate-chapter-fade" style={{ maxWidth: '860px', margin: '0 auto' }}>
             {paragraphs.map((para, idx) => {
               if (searchQuery.trim().length > 0) {
@@ -491,7 +795,8 @@ export const MainReader: React.FC<MainReaderProps> = ({
           <button
             onClick={() => setIsAutoScrolling(false)}
             style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-            title="暂停滚屏 (空格 Space)"
+            data-tooltip="暂停滚屏 (空格 Space)"
+            data-tooltip-pos="top"
           >
             <Pause size={13} />
           </button>

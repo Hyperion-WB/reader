@@ -213,11 +213,13 @@ export const TocView: React.FC<TocViewProps> = ({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
+        className="smooth-scroll"
         style={{
           flex: 1,
-          overflowY: 'auto',
           position: 'relative',
-          borderRadius: '14px'
+          borderRadius: '14px',
+          paddingBottom: '24px',
+          boxSizing: 'border-box'
         }}
       >
         {totalCount === 0 ? (

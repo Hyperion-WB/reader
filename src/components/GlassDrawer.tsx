@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Book, Bookmark, BookSource, StealthConfig, ThemeConfig } from '../types/reader';
+import React, { useState, useEffect } from 'react';
+import { Book, Bookmark, BookSource, ChameleonModeType, StealthConfig, ThemeConfig } from '../types/reader';
 import { BookshelfView } from './Drawer/BookshelfView';
 import { TocView } from './Drawer/TocView';
 import { BookmarksView } from './Drawer/BookmarksView';
@@ -16,6 +16,7 @@ import {
   Globe,
   Palette,
   ShieldCheck,
+  HelpCircle,
   X
 } from 'lucide-react';
 
@@ -43,6 +44,8 @@ interface GlassDrawerProps {
   onUpdateStealth: (config: StealthConfig) => void;
   onReloadAllData: () => void;
   onUpdateBookCover?: (bookId: string, cover: string) => void;
+  onChangeChameleonMode?: (mode: ChameleonModeType) => void;
+  onOpenGuide?: () => void;
 }
 
 export const GlassDrawer: React.FC<GlassDrawerProps> = ({
@@ -66,11 +69,11 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
   onUpdateTheme,
   onUpdateStealth,
   onReloadAllData,
-  onUpdateBookCover
+  onUpdateBookCover,
+  onChangeChameleonMode,
+  onOpenGuide
 }) => {
   const [activeTab, setActiveTab] = useState<DrawerTab>('bookshelf');
-
-  if (!isOpen) return null;
 
   const navItems: { id: DrawerTab; label: string; icon: React.ReactNode }[] = [
     { id: 'bookshelf', label: '书架', icon: <Library size={13} /> },
@@ -82,6 +85,16 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
     { id: 'stealth', label: '摸鱼', icon: <ShieldCheck size={13} /> }
   ];
 
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 800);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isNarrowDrawer = windowWidth < 500;
+
   return (
     <div
       style={{
@@ -89,55 +102,111 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
         inset: 0,
         zIndex: 2000,
         display: 'flex',
+        pointerEvents: isOpen ? 'auto' : 'none',
+        opacity: isOpen ? 1 : 0,
         background: 'rgba(0, 0, 0, 0.45)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)'
+        backdropFilter: isOpen ? 'blur(8px)' : 'none',
+        WebkitBackdropFilter: isOpen ? 'blur(8px)' : 'none',
+        transition: 'opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
       }}
       onClick={onClose}
     >
-      {/* Drawer Main Container */}
+      {/* Floating Island Drawer Card - Positioned Elegantly Below Top Navigation Bar */}
       <div
-        className="frosted-panel animate-ios-drawer"
+        className="frosted-panel"
         style={{
-          width: '460px',
-          maxWidth: '88vw',
-          height: '100%',
+          marginTop: '68px',
+          marginLeft: '14px',
+          marginBottom: '14px',
+          width: '490px',
+          maxWidth: 'calc(100vw - 28px)',
+          height: 'calc(100% - 82px)',
           display: 'flex',
           flexDirection: 'column',
-          padding: '18px 16px',
+          padding: '16px 14px',
           boxSizing: 'border-box',
-          gap: '12px',
-          borderRight: '1px solid var(--glass-border-hover)',
-          borderRadius: '0 20px 20px 0',
-          boxShadow: '8px 0 32px rgba(0, 0, 0, 0.25)'
+          gap: '10px',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '20px',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+          transform: isOpen ? 'translateX(0) scale(1)' : 'translateX(-40px) scale(0.96)',
+          opacity: isOpen ? 1 : 0,
+          transition: 'transform 0.35s cubic-bezier(0.34, 1.36, 0.64, 1), opacity 0.28s ease'
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header & Segmented Tabs */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
-          <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
-            控制中心
+          <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)', letterSpacing: '-0.3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>控制中心</span>
+            <span style={{ fontSize: '11px', fontWeight: 400, color: 'var(--text-muted)' }}>
+              ({activeTab === 'bookshelf' ? '我的书架' : activeTab === 'toc' ? '书籍目录' : activeTab === 'bookmarks' ? '精彩书签' : activeTab === 'search' ? '聚合搜书' : activeTab === 'sources' ? '书源管理' : activeTab === 'style' ? '排版样式' : '摸鱼隐身'})
+            </span>
           </div>
-          <button
-            onClick={onClose}
-            className="frosted-btn"
-            style={{ padding: '6px', borderRadius: '50%' }}
-            title="关闭侧边栏 (Esc)"
-          >
-            <X size={15} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {onOpenGuide && (
+              <button
+                onClick={onOpenGuide}
+                className="frosted-btn"
+                style={{ padding: '5px', borderRadius: '50%' }}
+                data-tooltip="应用介绍与快捷键指南"
+                data-tooltip-pos="bottom"
+              >
+                <HelpCircle size={14} />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="frosted-btn"
+              style={{ padding: '5px', borderRadius: '50%' }}
+              data-tooltip="关闭侧边栏 (Esc)"
+              data-tooltip-pos="bottom"
+            >
+              <X size={14} />
+            </button>
+          </div>
         </div>
 
-        {/* Top Segmented Navigation Control with iOS Fluid Sliding Pill */}
-        <IOSSegmentedControl<DrawerTab>
-          items={navItems}
-          activeId={activeTab}
-          onChange={setActiveTab}
-          height={36}
-        />
+        {/* Responsive Segmented Navigation Control */}
+        {isNarrowDrawer ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', background: 'rgba(0, 0, 0, 0.16)', padding: '4px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+            {navItems.map((item) => {
+              const isActive = item.id === activeTab;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className="frosted-btn"
+                  style={{
+                    padding: '6px 4px',
+                    borderRadius: '10px',
+                    background: isActive ? 'var(--accent-color)' : 'transparent',
+                    color: isActive ? '#fff' : 'var(--text-secondary)',
+                    fontWeight: isActive ? 600 : 400,
+                    fontSize: '11px',
+                    justifyContent: 'center',
+                    gap: '4px',
+                    border: 'none',
+                    boxShadow: isActive ? '0 2px 6px rgba(0,0,0,0.2)' : 'none'
+                  }}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <IOSSegmentedControl<DrawerTab>
+            items={navItems}
+            activeId={activeTab}
+            onChange={setActiveTab}
+            height={34}
+          />
+        )}
 
-        {/* Drawer Tab Content with generous padding to prevent clipped shadows */}
-        <div style={{ flex: 1, overflow: 'hidden', padding: '4px 2px' }}>
+        {/* Drawer Tab Content */}
+        <div style={{ flex: 1, overflow: 'hidden', padding: '4px 2px 2px 2px', borderRadius: '16px' }}>
           {activeTab === 'bookshelf' && (
             <BookshelfView
               books={books}
@@ -179,19 +248,25 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
           {activeTab === 'search' && (
             <OnlineSearchView
               sources={sources}
-              onAddBookToShelf={(newBook) => {
-                onAddBookToShelf(newBook);
+              onAddBookToShelf={(book) => {
+                onAddBookToShelf(book);
                 onClose();
               }}
             />
           )}
 
           {activeTab === 'sources' && (
-            <SourceManagerView sources={sources} onUpdateSources={onUpdateSources} />
+            <SourceManagerView
+              sources={sources}
+              onUpdateSources={onUpdateSources}
+            />
           )}
 
           {activeTab === 'style' && (
-            <StyleStudioView themeConfig={themeConfig} onUpdateTheme={onUpdateTheme} />
+            <StyleStudioView
+              themeConfig={themeConfig}
+              onUpdateTheme={onUpdateTheme}
+            />
           )}
 
           {activeTab === 'stealth' && (
@@ -199,6 +274,10 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
               stealthConfig={stealthConfig}
               onUpdateStealth={onUpdateStealth}
               onReloadAllData={onReloadAllData}
+              onChangeChameleonMode={(mode) => {
+                onChangeChameleonMode?.(mode);
+                onClose();
+              }}
             />
           )}
         </div>

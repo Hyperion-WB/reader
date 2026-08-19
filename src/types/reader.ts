@@ -7,6 +7,8 @@ export interface Chapter {
   content?: string;
   index: number;
   wordCount?: number;
+  isComic?: boolean;
+  comicImages?: string[]; // Base64 or Blob URLs of comic manga pages
 }
 
 export interface Book {
@@ -16,7 +18,7 @@ export interface Book {
   cover?: string;
   intro?: string;
   category?: string;
-  sourceId: string; // 'local-txt', 'local-epub', or custom source ID
+  sourceId: string; // 'local-txt', 'local-epub', 'local-comic', etc.
   sourceName: string;
   sourceUrl?: string;
   detailUrl?: string;
@@ -25,9 +27,12 @@ export interface Book {
   currentChapterIndex: number;
   currentProgressPercent: number; // 0 - 100
   scrollPosition?: number;
+  currentPage?: number;
   lastReadTime: number;
   totalWordCount?: number;
   isOnlineSource?: boolean;
+  isComic?: boolean;
+  bookFormat?: 'txt' | 'epub' | 'comic-cbz' | 'comic-zip' | 'markdown' | 'pdf' | 'custom';
 }
 
 export interface BookSourceRule {
@@ -66,6 +71,7 @@ export interface BookSource {
   name: string;
   url: string;
   enabled: boolean;
+  groupName?: string;
   weight?: number;
   type?: 'legado' | 'custom' | 'api';
   rule?: BookSourceRule;
@@ -90,11 +96,28 @@ export type GlassOpacityLevel = 'l0' | 'l1' | 'l2' | 'l3'; // L0: transparent, L
 
 export type ColorThemePreset = 'day-glass' | 'dark-oled' | 'parchment' | 'forest' | 'hacker' | 'stealth-pure';
 
+export type ReadingBackgroundPreset =
+  | 'default'
+  | 'parchment'
+  | 'rice-paper'
+  | 'eyecare-green'
+  | 'warm-latte'
+  | 'slate-gray'
+  | 'kraft-wood'
+  | 'navy-night'
+  | 'pure-black'
+  | 'custom';
+
 export interface ThemeConfig {
   glassLevel: GlassOpacityLevel;
   customGlassOpacity: number; // 0.0 ~ 1.0
   glassBlurRadius: number; // 0px ~ 60px
   themePreset: ColorThemePreset;
+  backgroundPreset: ReadingBackgroundPreset;
+  customBgImage?: string; // Base64 data URL for uploaded wallpaper
+  customBgColor?: string; // Custom Hex color
+  bgImageOpacity?: number; // 0.0 ~ 1.0
+  bgImageBlur?: number; // 0 ~ 30px
   fontSize: number; // 12 ~ 32px
   lineHeight: number; // 1.2 ~ 2.8
   letterSpacing: number; // 0 ~ 4px
@@ -107,7 +130,18 @@ export interface ThemeConfig {
   pageMode: 'paginated' | 'scroll';
 }
 
-export type ChameleonModeType = 'none' | 'excel' | 'vscode' | 'idea' | 'word' | 'pdf' | 'stickynote' | 'ticker';
+export type ChameleonModeType =
+  | 'none'
+  | 'excel'
+  | 'vscode'
+  | 'idea'
+  | 'word'
+  | 'pdf'
+  | 'email'
+  | 'chat'
+  | 'ppt'
+  | 'stickynote'
+  | 'ticker';
 
 export interface StealthConfig {
   bossKeyShortcut: string; // e.g. "Alt+`"

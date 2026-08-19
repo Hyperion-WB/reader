@@ -211,6 +211,158 @@ export const parseEpubFile = async (filename: string, arrayBuffer: ArrayBuffer):
     currentProgressPercent: 0,
     lastReadTime: Date.now(),
     totalWordCount,
-    isOnlineSource: false
+    isOnlineSource: false,
+    bookFormat: 'epub'
   };
+};
+
+// Comic CBZ / ZIP Archive Parser (支持漫画包、图集、绘本)
+export const parseComicArchive = async (filename: string, arrayBuffer: ArrayBuffer): Promise<Book> => {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const imageRegex = /\.(jpe?g|png|webp|avif|gif|bmp)$/i;
+
+  const imageFiles: { path: string; file: JSZip.JSZipObject }[] = [];
+
+  zip.forEach((relativePath, file) => {
+    if (!file.dir && imageRegex.test(relativePath) && !relativePath.startsWith('__MACOSX/')) {
+      imageFiles.push({ path: relativePath, file });
+    }
+  });
+
+  if (imageFiles.length === 0) {
+    throw new Error('无效的漫画压缩包：压缩包内未找到任何 JPG/PNG/WebP 漫画图片');
+  }
+
+  // Natural alphanumeric sort for comic page sequences (e.g. 1.jpg, 2.jpg, 10.jpg)
+  imageFiles.sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true, sensitivity: 'base' }));
+
+  const comicImages: string[] = [];
+  for (let i = 0; i < imageFiles.length; i++) {
+    const base64 = await imageFiles[i].file.async('base64');
+    const ext = imageFiles[i].path.split('.').pop()?.toLowerCase() || 'jpg';
+    const mime = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
+    comicImages.push(`data:${mime};base64,${base64}`);
+  }
+
+  const bookTitle = filename.replace(/\.(cbz|zip|cbr|rar|7z)$/i, '');
+
+  const chapters: Chapter[] = [
+    {
+      id: 'comic-ch-1',
+      title: '全本图集 / 连载画卷',
+      index: 0,
+      isComic: true,
+      comicImages,
+      wordCount: comicImages.length
+    }
+  ];
+
+  return {
+    id: `book-comic-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    title: bookTitle,
+    author: '漫画图集',
+    cover: comicImages[0], // First page as cover
+    intro: `本地漫画图集，共包含 ${comicImages.length} 页高清画幅。`,
+    sourceId: 'local-comic',
+    sourceName: '本地漫画',
+    chapters,
+    currentChapterIndex: 0,
+    currentProgressPercent: 0,
+    lastReadTime: Date.now(),
+    totalWordCount: comicImages.length,
+    isOnlineSource: false,
+    isComic: true,
+    bookFormat: 'comic-cbz'
+  };
+};
+
+// Markdown Document Parser
+export const parseMarkdownFile = (filename: string, content: string): Book => {
+  const bookTitle = filename.replace(/\.md$/i, '');
+  const chapters: Chapter[] = [];
+
+  // Split by top-level Markdown headers (# or ##)
+  const headerRegex = /(?:^|\n)(#{1,2}\s+[^\n]+)/g;
+  const matches: { index: number; title: string }[] = [];
+  let match: RegExpExecArray | null;
+
+  while ((match = headerRegex.exec(content)) !== null) {
+    matches.push({
+      index: match.index,
+      title: match[1].replace(/^#+\s*/, '').trim()
+    });
+  }
+
+  if (matches.length >= 2) {
+    for (let i = 0; i < matches.length; i++) {
+      const current = matches[i];
+      const next = matches[i + 1];
+      const startPos = current.index;
+      const endPos = next ? next.index : content.length;
+      const chapterRaw = content.slice(startPos, endPos).trim();
+
+      chapters.push({
+        id: `md-ch-${i + 1}`,
+        title: current.title || `第 ${i + 1} 节`,
+        content: chapterRaw,
+        index: i,
+        wordCount: chapterRaw.length
+      });
+    }
+  } else {
+    // Single document chapter
+    chapters.push({
+      id: 'md-ch-1',
+      title: bookTitle,
+      content,
+      index: 0,
+      wordCount: content.length
+    });
+  }
+
+  return {
+    id: `book-md-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    title: bookTitle,
+    author: 'Markdown 笔记',
+    intro: `本地 Markdown 导入文档，共 ${chapters.length} 章节。`,
+    sourceId: 'local-md',
+    sourceName: '本地 Markdown',
+    chapters,
+    currentChapterIndex: 0,
+    currentProgressPercent: 0,
+    lastReadTime: Date.now(),
+    totalWordCount: content.length,
+    isOnlineSource: false,
+    bookFormat: 'markdown'
+  };
+};
+
+// Universal Local File Parser Dispatcher
+export const parseUniversalLocalFile = async (file: File): Promise<Book> => {
+  const name = file.name;
+  const ext = name.split('.').pop()?.toLowerCase() || '';
+
+  if (ext === 'txt' || ext === 'text') {
+    const text = await file.text();
+    return parseTxtFile(name, text);
+  }
+
+  if (ext === 'md' || ext === 'markdown') {
+    const text = await file.text();
+    return parseMarkdownFile(name, text);
+  }
+
+  if (ext === 'epub') {
+    const buffer = await file.arrayBuffer();
+    return parseEpubFile(name, buffer);
+  }
+
+  if (ext === 'cbz' || ext === 'zip') {
+    const buffer = await file.arrayBuffer();
+    return parseComicArchive(name, buffer);
+  }
+
+  // Fallback for text-based unknown files
+  const text = await file.text();
+  return parseTxtFile(name, text);
 };

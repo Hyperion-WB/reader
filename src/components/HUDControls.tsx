@@ -8,7 +8,9 @@ import {
   VolumeX,
   Play,
   Pause,
-  HelpCircle
+  HelpCircle,
+  BookOpen,
+  AlignJustify
 } from 'lucide-react';
 import { ThemeConfig } from '../types/reader';
 
@@ -217,6 +219,29 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
             </span>
           )}
 
+          {/* Reading Mode Switcher Button (Scroll vs Page) */}
+          <button
+            onClick={() =>
+              onUpdateTheme({
+                ...themeConfig,
+                pageMode: themeConfig.pageMode === 'paginated' ? 'scroll' : 'paginated'
+              })
+            }
+            className="frosted-btn"
+            style={{
+              padding: '3px 7px',
+              borderRadius: '9999px',
+              fontSize: '11px',
+              gap: '4px',
+              flexShrink: 0
+            }}
+            data-tooltip={themeConfig.pageMode === 'paginated' ? '当前：单页翻页（点击切为连续滚动）' : '当前：连续滚动（点击切为单页翻页）'}
+            data-tooltip-pos="top"
+          >
+            {themeConfig.pageMode === 'paginated' ? <BookOpen size={12} style={{ color: 'var(--accent-color)' }} /> : <AlignJustify size={12} style={{ color: 'var(--accent-color)' }} />}
+            <span>{themeConfig.pageMode === 'paginated' ? '翻页' : '滚动'}</span>
+          </button>
+
           {/* TTS Speech Trigger */}
           <button
             onClick={onToggleTTS}
@@ -227,7 +252,8 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
               color: isTTSPlaying ? 'var(--accent-color)' : 'var(--text-primary)',
               flexShrink: 0
             }}
-            title={isTTSPlaying ? '停止朗读' : '开启静默朗读听书'}
+            data-tooltip={isTTSPlaying ? '停止朗读' : '开启静默朗读听书'}
+            data-tooltip-pos="top"
           >
             {isTTSPlaying ? <VolumeX size={13} /> : <Volume2 size={13} />}
           </button>

@@ -49,8 +49,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v__VERSION__
-          releaseName: 'LiquidReader v__VERSION__'
-          releaseBody: 'Liquid Glass Stealth Novel Reader for Windows (通透磨砂玻璃摸鱼小说阅读器)'
+          releaseName: '摸鱼阅读 v__VERSION__'
+          releaseBody: '摸鱼阅读 · 通透磨砂玻璃小说与漫画摸鱼阅读器'
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
@@ -64,14 +64,15 @@ jobs:
           files: |
             src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/release/bundle/msi/*.msi
-            src-tauri/target/release/liquid-reader.exe
+            src-tauri/target/release/*.exe
           tag_name: ${{ github.ref_name }}
-          name: 'LiquidReader ${{ github.ref_name }}'
+          name: '摸鱼阅读 ${{ github.ref_name }}'
           body: |
-            ### 🧊 LiquidReader (通透磨砂玻璃风摸鱼小说阅读器)
-            - 纯净通透磨砂无边框设计，16px 苹果级平滑圆角
-            - 安卓/iPadOS 悬浮小窗顶部拖拽条
-            - 5 大全场景办公摸鱼伪装矩阵（Excel 中文版、Word 公文、VS Code、IDEA、PDF 论文、便签条、24px 状态条）
-            - 万章级高性能虚拟滚动目录引擎与全网 Legado 聚合搜书
+            ### 🐟 摸鱼阅读 (MoYu Reader · 通透磨砂玻璃小说与漫画阅读器)
+            - 纯净通透磨砂无边框设计，16px 苹果级物理弹簧阻尼动效
+            - 支持 TXT、EPUB、Markdown、ZIP/CBZ 漫画图集高清画卷连续流
+            - 「连续瀑布流滚动 ⇋ 仿真单页翻页」双阅读引擎
+            - 10 大办公全场景变身伪装矩阵（Excel、Word、Outlook、企业微信、VSCode、IDEA、PPT、便签条、24px 状态条）
+            - 智能窄窗口折叠自适应与多书切换胶囊
           draft: false
           prerelease: false

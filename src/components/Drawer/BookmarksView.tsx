@@ -23,7 +23,7 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
       return;
     }
 
-    let md = `# LiquidReader 读书笔记与摘录\n\n`;
+    let md = `# 摸鱼阅读 读书笔记与摘录\n\n`;
     md += `> 导出时间: ${new Date().toLocaleString()}\n`;
     md += `> 摘录条数: ${currentBookBookmarks.length} 条\n\n---\n\n`;
 
@@ -64,13 +64,14 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
       </div>
 
       <div
+        className="smooth-scroll"
         style={{
           flex: 1,
-          overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
           gap: '8px',
-          padding: '2px 2px 8px 2px'
+          padding: '2px 2px 36px 2px',
+          boxSizing: 'border-box'
         }}
       >
         {currentBookBookmarks.length === 0 ? (
@@ -127,18 +128,31 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
                     e.stopPropagation();
                     onDeleteBookmark(bm.id);
                   }}
+                  className="frosted-btn"
                   style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    padding: '4px'
+                    width: '26px',
+                    height: '26px',
+                    padding: 0,
+                    borderRadius: '50%',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--text-muted)'
                   }}
-                  title="删除书签"
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                  data-tooltip="删除书签"
+                  data-tooltip-pos="left"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#ef4444';
+                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+                    e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--text-muted)';
+                    e.currentTarget.style.background = 'var(--glass-surface)';
+                    e.currentTarget.style.borderColor = 'var(--glass-border)';
+                  }}
                 >
-                  <Trash2 size={13} />
+                  <Trash2 size={12} />
                 </button>
               </div>
 

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "LiquidReader",
-  "version": "1.0.6",
-  "identifier": "com.liquidreader.app",
+  "productName": "摸鱼阅读",
+  "version": "1.0.7",
+  "identifier": "com.moyureader.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "LiquidReader",
+        "title": "摸鱼阅读",
         "width": 780,
         "height": 560,
         "minWidth": 260,

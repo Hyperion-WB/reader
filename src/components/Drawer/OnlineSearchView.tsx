@@ -91,7 +91,7 @@ export const OnlineSearchView: React.FC<OnlineSearchViewProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
       {/* Search Input Bar */}
-      <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px' }}>
+      <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px', padding: '2px 2px 4px 2px' }}>
         <div style={{ position: 'relative', flex: 1 }}>
           <Search
             size={14}
@@ -116,7 +116,7 @@ export const OnlineSearchView: React.FC<OnlineSearchViewProps> = ({
           type="submit"
           disabled={isSearching}
           className="frosted-btn frosted-btn-primary"
-          style={{ padding: '0 16px', minWidth: '80px', borderRadius: '12px' }}
+          style={{ padding: '0 16px', minWidth: '78px', borderRadius: '12px', flexShrink: 0 }}
         >
           {isSearching ? <Loader2 size={14} className="animate-spin" /> : '搜索'}
         </button>

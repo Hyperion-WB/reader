@@ -72,7 +72,7 @@ export class BookSourceEngine {
   }
 
   // Convert Legado 3.0 Book Source JSON to unified BookSource model
-  public static parseLegadoSource(rawJson: any): BookSource[] {
+  public static parseLegadoSource(rawJson: any, defaultGroupName?: string): BookSource[] {
     const list = Array.isArray(rawJson) ? rawJson : [rawJson];
     const results: BookSource[] = [];
 
@@ -82,6 +82,7 @@ export class BookSourceEngine {
       const url = item.bookSourceUrl || item.url || '';
       if (!url) continue;
 
+      const groupName = defaultGroupName?.trim() || item.bookSourceGroup || item.groupName || '默认导入组';
       const ruleSearch = item.ruleSearch || {};
       const ruleToc = item.ruleToc || {};
       const ruleContent = item.ruleBookContent || item.ruleContent || {};
@@ -91,6 +92,7 @@ export class BookSourceEngine {
         name,
         url,
         enabled: item.enabled !== false,
+        groupName,
         weight: item.weight || item.customOrder || 50,
         type: 'legado',
         rule: {

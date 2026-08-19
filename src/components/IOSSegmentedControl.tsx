@@ -84,10 +84,10 @@ export function IOSSegmentedControl<T extends string>({
           width: `${indicatorStyle.width}px`,
           background: pillColor,
           borderRadius: '9999px',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.25)',
+          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
           opacity: indicatorStyle.opacity,
           transition:
-            'transform 0.32s cubic-bezier(0.25, 1, 0.5, 1), width 0.28s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease',
+            'transform 0.32s cubic-bezier(0.34, 1.36, 0.64, 1), width 0.28s cubic-bezier(0.34, 1.36, 0.64, 1), opacity 0.2s ease',
           pointerEvents: 'none',
           zIndex: 1
         }}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Book,
+  Chapter,
   Bookmark,
   BookSource,
   ChameleonModeType,
@@ -16,6 +17,9 @@ import { VSCodeMode } from './components/ChameleonModes/VSCodeMode';
 import { IdeaMode } from './components/ChameleonModes/IdeaMode';
 import { WordMode } from './components/ChameleonModes/WordMode';
 import { PdfMode } from './components/ChameleonModes/PdfMode';
+import { EmailMode } from './components/ChameleonModes/EmailMode';
+import { ChatMode } from './components/ChameleonModes/ChatMode';
+import { PptMode } from './components/ChameleonModes/PptMode';
 import { StickyNoteMode } from './components/ChameleonModes/StickyNoteMode';
 import { TickerBarMode } from './components/ChameleonModes/TickerBarMode';
 import {
@@ -26,15 +30,29 @@ import {
   registerBossKeyShortcut,
   windowControls
 } from './services/tauriBridge';
-import { parseEpubFile, parseTxtFile } from './services/localFileParser';
+import {
+  parseEpubFile,
+  parseTxtFile,
+  parseComicArchive,
+  parseMarkdownFile,
+  parseUniversalLocalFile
+} from './services/localFileParser';
 import { Upload, Plus } from 'lucide-react';
 import { CuteAppIcon } from './components/CuteAppIcon';
 import { WindowResizeHandles } from './components/WindowResizeHandles';
+import { OnboardingModal } from './components/OnboardingModal';
 import './styles/glass.css';
 
 export default function App() {
   // Main State
   const [books, setBooks] = useState<Book[]>(() => StorageService.getBooks());
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('liquid_reader_has_seen_onboarding_v2') !== 'true';
+    } catch {
+      return false;
+    }
+  });
   const [activeBookId, setActiveBookId] = useState<string | null>(() => {
     const saved = StorageService.getActiveBookId();
     if (saved) return saved;
@@ -265,19 +283,26 @@ export default function App() {
     }
   };
 
-  // Local File Import Dialog (TXT / EPUB)
+  // Local File Import Dialog (TXT / EPUB / MD / CBZ / ZIP Comic)
   const handleImportLocalFile = async () => {
     try {
       const filePath = await openLocalFileDialog([
-        { name: '小说书籍文件 (*.txt, *.epub, *.md)', extensions: ['txt', 'epub', 'md'] }
+        { name: '小说与漫画书籍 (*.txt, *.epub, *.md, *.cbz, *.zip, *.cbr)', extensions: ['txt', 'epub', 'md', 'cbz', 'zip', 'cbr'] }
       ]);
 
       if (filePath) {
-        const fileName = filePath.split(/[/\\]/).pop() || '未命名小说';
+        const fileName = filePath.split(/[/\\]/).pop() || '未命名书籍';
+        const lowerName = fileName.toLowerCase();
         let importedBook: Book;
-        if (fileName.toLowerCase().endsWith('.epub')) {
+        if (lowerName.endsWith('.epub')) {
           const buffer = await readLocalBinaryFile(filePath);
           importedBook = await parseEpubFile(fileName, buffer);
+        } else if (lowerName.endsWith('.cbz') || lowerName.endsWith('.zip') || lowerName.endsWith('.cbr')) {
+          const buffer = await readLocalBinaryFile(filePath);
+          importedBook = await parseComicArchive(fileName, buffer);
+        } else if (lowerName.endsWith('.md') || lowerName.endsWith('.markdown')) {
+          const text = await readLocalTextFile(filePath);
+          importedBook = parseMarkdownFile(fileName, text);
         } else {
           const text = await readLocalTextFile(filePath);
           importedBook = parseTxtFile(fileName, text);
@@ -290,44 +315,39 @@ export default function App() {
     }
   };
 
-  // HTML5 Fallback File Picker
-  const handleHTML5FileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // HTML5 Fallback File Picker (Supports all formats)
+  const handleHTML5FileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    if (file.name.toLowerCase().endsWith('.epub')) {
-      reader.onload = async (event) => {
-        const buffer = event.target?.result as ArrayBuffer;
-        if (buffer) {
-          const imported = await parseEpubFile(file.name, buffer);
-          handleAddBookToShelf(imported);
-          setIsDrawerOpen(false);
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    } else {
-      reader.onload = (event) => {
-        const text = event.target?.result as string;
-        if (text) {
-          const imported = parseTxtFile(file.name, text);
-          handleAddBookToShelf(imported);
-          setIsDrawerOpen(false);
-        }
-      };
-      reader.readAsText(file, 'utf-8');
+    try {
+      const imported = await parseUniversalLocalFile(file);
+      handleAddBookToShelf(imported);
+      setIsDrawerOpen(false);
+    } catch (err: any) {
+      alert(`导入文件失败: ${err.message || err}`);
     }
   };
 
+  const [isFadeLocked, setIsFadeLocked] = useState(false);
+
   // Mouse Auto-Fade on Hover Leave (Stealth Feature)
   const handleWindowMouseEnter = () => {
-    if (stealthConfig.mouseAutoFade) {
+    if (stealthConfig.mouseAutoFade && !isFadeLocked) {
       setIsMouseFaded(false);
     }
   };
 
   const handleWindowMouseLeave = () => {
-    if (stealthConfig.mouseAutoFade) {
+    // DO NOT FADE IF:
+    // 1. User locked brightness (isFadeLocked === true)
+    // 2. An input or textarea is currently focused (prevents IME candidate window from hiding the page!)
+    const activeEl = document.activeElement;
+    const isInputFocused =
+      activeEl &&
+      (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.getAttribute('contenteditable') === 'true');
+
+    if (stealthConfig.mouseAutoFade && !isFadeLocked && !isInputFocused) {
       setIsMouseFaded(true);
     }
   };
@@ -347,11 +367,18 @@ export default function App() {
     );
   }
 
-  // Chameleon Fullscreen Modes
+  // Chameleon Fullscreen Modes with fallback safeChapter
+  const safeChapter: Chapter = currentChapter || {
+    id: 'demo-chapter',
+    title: '暂无章节',
+    content: '暂无章节内容，请在书架选择书籍或导入本地小说开始阅读。',
+    index: 0
+  };
+
   if (chameleonMode === 'excel') {
     return (
       <ExcelMode
-        currentChapter={currentChapter}
+        currentChapter={safeChapter}
         onExit={() => setChameleonMode('none')}
         onNextChapter={handleNextChapter}
         onPrevChapter={handlePrevChapter}
@@ -362,7 +389,7 @@ export default function App() {
   if (chameleonMode === 'word') {
     return (
       <WordMode
-        currentChapter={currentChapter}
+        currentChapter={safeChapter}
         onExit={() => setChameleonMode('none')}
         onNextChapter={handleNextChapter}
         onPrevChapter={handlePrevChapter}
@@ -373,7 +400,7 @@ export default function App() {
   if (chameleonMode === 'vscode') {
     return (
       <VSCodeMode
-        currentChapter={currentChapter}
+        currentChapter={safeChapter}
         onExit={() => setChameleonMode('none')}
         onNextChapter={handleNextChapter}
         onPrevChapter={handlePrevChapter}
@@ -395,7 +422,40 @@ export default function App() {
   if (chameleonMode === 'pdf') {
     return (
       <PdfMode
-        currentChapter={currentChapter}
+        currentChapter={safeChapter}
+        onExit={() => setChameleonMode('none')}
+        onNextChapter={handleNextChapter}
+        onPrevChapter={handlePrevChapter}
+      />
+    );
+  }
+
+  if (chameleonMode === 'email') {
+    return (
+      <EmailMode
+        currentChapter={safeChapter}
+        onExit={() => setChameleonMode('none')}
+        onNextChapter={handleNextChapter}
+        onPrevChapter={handlePrevChapter}
+      />
+    );
+  }
+
+  if (chameleonMode === 'chat') {
+    return (
+      <ChatMode
+        currentChapter={safeChapter}
+        onExit={() => setChameleonMode('none')}
+        onNextChapter={handleNextChapter}
+        onPrevChapter={handlePrevChapter}
+      />
+    );
+  }
+
+  if (chameleonMode === 'ppt') {
+    return (
+      <PptMode
+        currentChapter={safeChapter}
         onExit={() => setChameleonMode('none')}
         onNextChapter={handleNextChapter}
         onPrevChapter={handlePrevChapter}
@@ -406,7 +466,7 @@ export default function App() {
   if (chameleonMode === 'stickynote') {
     return (
       <StickyNoteMode
-        currentChapter={currentChapter}
+        currentChapter={safeChapter}
         onExit={() => setChameleonMode('none')}
         onNextChapter={handleNextChapter}
         onPrevChapter={handlePrevChapter}
@@ -417,7 +477,7 @@ export default function App() {
   if (chameleonMode === 'ticker') {
     return (
       <TickerBarMode
-        currentChapter={currentChapter}
+        currentChapter={safeChapter}
         onExit={() => setChameleonMode('none')}
         onNextChapter={handleNextChapter}
         onPrevChapter={handlePrevChapter}
@@ -443,7 +503,7 @@ export default function App() {
         overflow: 'hidden',
         borderRadius: '16px',
         border: '1px solid var(--glass-border)',
-        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.35)',
+        boxShadow: 'inset 0 0 0 1px var(--glass-border), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
         background: 'var(--bg-app)',
         backdropFilter: 'blur(var(--glass-blur)) saturate(var(--glass-saturate))',
         WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(var(--glass-saturate))',
@@ -487,6 +547,8 @@ export default function App() {
           setStealthConfig((prev) => ({ ...prev, alwaysOnTop: newVal }));
           windowControls.setAlwaysOnTop(newVal);
         }}
+        isFadeLocked={isFadeLocked}
+        onToggleFadeLock={() => setIsFadeLocked((prev) => !prev)}
         onTriggerBossKey={handleBossKeyTrigger}
       />
 
@@ -520,10 +582,10 @@ export default function App() {
             <CuteAppIcon size={80} />
             <div>
               <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                欢迎使用 LiquidReader
+                欢迎使用 摸鱼阅读
               </div>
               <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', maxWidth: '340px', lineHeight: '1.5' }}>
-                通透磨砂玻璃质感 · 苹果级物理动效 · 全网 Legado 聚合搜书 · 多维办公伪装矩阵
+                通透磨砂玻璃质感 · 小说与漫画双引擎 · 全网 Legado 聚合搜书 · 10 大办公摸鱼伪装矩阵
               </div>
             </div>
 
@@ -601,6 +663,19 @@ export default function App() {
         }}
         onUpdateBookCover={(bookId: string, cover: string) => {
           setBooks((prev) => prev.map((b) => (b.id === bookId ? { ...b, cover } : b)));
+        }}
+        onChangeChameleonMode={setChameleonMode}
+        onOpenGuide={() => setShowOnboarding(true)}
+      />
+
+      {/* First-Time Welcome & User Onboarding Modal */}
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => {
+          setShowOnboarding(false);
+          try {
+            localStorage.setItem('liquid_reader_has_seen_onboarding_v2', 'true');
+          } catch {}
         }}
       />
     </div>

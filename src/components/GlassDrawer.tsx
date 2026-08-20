@@ -48,6 +48,7 @@ interface GlassDrawerProps {
   onChangeChameleonMode?: (mode: ChameleonModeType) => void;
   onOpenGuide?: () => void;
   onOpenShortcuts?: () => void;
+  todayReadingMinutes?: number;
 }
 
 export const GlassDrawer: React.FC<GlassDrawerProps> = ({
@@ -74,7 +75,8 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
   onUpdateBookCover,
   onChangeChameleonMode,
   onOpenGuide,
-  onOpenShortcuts
+  onOpenShortcuts,
+  todayReadingMinutes
 }) => {
   const [activeTab, setActiveTab] = useState<DrawerTab>('bookshelf');
 
@@ -140,11 +142,18 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
       >
         {/* Drawer Header & Segmented Tabs */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
-          <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)', letterSpacing: '-0.3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span>控制中心</span>
-            <span style={{ fontSize: '11px', fontWeight: 400, color: 'var(--text-muted)' }}>
-              ({activeTab === 'bookshelf' ? '我的书架' : activeTab === 'toc' ? '书籍目录' : activeTab === 'bookmarks' ? '精彩书签' : activeTab === 'search' ? '聚合搜书' : activeTab === 'sources' ? '书源管理' : activeTab === 'style' ? '排版样式' : '摸鱼隐身'})
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)', letterSpacing: '-0.3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>控制中心</span>
+              <span style={{ fontSize: '11px', fontWeight: 400, color: 'var(--text-muted)' }}>
+                ({activeTab === 'bookshelf' ? '我的书架' : activeTab === 'toc' ? '书籍目录' : activeTab === 'bookmarks' ? '精彩书签' : activeTab === 'search' ? '聚合搜书' : activeTab === 'sources' ? '书源管理' : activeTab === 'style' ? '排版样式' : '摸鱼隐身'})
+              </span>
+            </div>
+            {todayReadingMinutes !== undefined && todayReadingMinutes > 0 && (
+              <span style={{ fontSize: '10.5px', color: 'var(--accent-color)', background: 'rgba(56, 189, 248, 0.12)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 500 }}>
+                今日已读 {todayReadingMinutes} 分钟
+              </span>
+            )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             {onOpenShortcuts && (

@@ -95,6 +95,20 @@ export const MainReader: React.FC<MainReaderProps> = ({
         } finally {
           if (!isCancelled) {
             setLoadingContent(false);
+            // Intelligent Background Prefetch for Next Chapter (0ms instant page flip)
+            const nextChapter = book.chapters[book.currentChapterIndex + 1];
+            if (nextChapter && !nextChapter.content && nextChapter.url) {
+              const source = sources.find((s) => s.id === book.sourceId) || {
+                id: book.sourceId,
+                name: book.sourceName,
+                url: book.sourceUrl || '',
+                enabled: true
+              };
+              const engine = new BookSourceEngine(sources);
+              engine.fetchChapterContent(nextChapter.url, source).then((nextContent) => {
+                if (nextContent) nextChapter.content = nextContent;
+              }).catch(() => {});
+            }
           }
         }
       } else {

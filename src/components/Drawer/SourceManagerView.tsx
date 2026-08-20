@@ -12,7 +12,9 @@ import {
   ChevronRight,
   ChevronDown,
   Layers,
-  X
+  X,
+  Activity,
+  Loader2
 } from 'lucide-react';
 import { universalFetch } from '../../services/tauriBridge';
 import { IOSSwitch } from '../IOSSwitch';
@@ -31,6 +33,8 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
   const [customGroupName, setCustomGroupName] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sourcePings, setSourcePings] = useState<Record<string, number | 'timeout'>>({});
+  const [isPinging, setIsPinging] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     '官方内置精选': true
   });
@@ -165,6 +169,30 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  const handlePingSources = async () => {
+    setIsPinging(true);
+    const enabledSources = sources.filter((s) => s.enabled);
+    const results: Record<string, number | 'timeout'> = {};
+
+    await Promise.allSettled(
+      enabledSources.map(async (s) => {
+        const start = Date.now();
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 4500);
+          await universalFetch(s.url, { signal: controller.signal });
+          clearTimeout(timeout);
+          results[s.id] = Date.now() - start;
+        } catch {
+          results[s.id] = 'timeout';
+        }
+      })
+    );
+
+    setSourcePings(results);
+    setIsPinging(false);
+  };
+
   const totalEnabled = sources.filter((s) => s.enabled).length;
 
   const handleToggleExpandAll = () => {
@@ -234,6 +262,16 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
         </div>
 
         <div style={{ display: 'flex', gap: '4px' }}>
+          <button
+            onClick={handlePingSources}
+            disabled={isPinging}
+            className="frosted-btn"
+            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px', color: 'var(--accent-color)' }}
+            title="一键测试已启用书源连通性与网络延迟"
+          >
+            {isPinging ? <Loader2 size={11} className="animate-spin" /> : <Activity size={11} />}
+            <span>{isPinging ? '测速中' : '测速'}</span>
+          </button>
           <button
             onClick={handleToggleExpandAll}
             className="frosted-btn"
@@ -391,9 +429,35 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
                         }}
                       >
                         <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', gap: '2px', paddingRight: '8px' }}>
-                          <span style={{ fontWeight: 500, color: source.enabled ? 'var(--text-primary)' : 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {source.name}
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontWeight: 500, color: source.enabled ? 'var(--text-primary)' : 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {source.name}
+                            </span>
+                            {sourcePings[source.id] !== undefined && (
+                              <span
+                                style={{
+                                  fontSize: '9.5px',
+                                  padding: '1px 5px',
+                                  borderRadius: '9999px',
+                                  fontWeight: 600,
+                                  background:
+                                    sourcePings[source.id] === 'timeout'
+                                      ? 'rgba(239, 68, 68, 0.2)'
+                                      : (sourcePings[source.id] as number) < 300
+                                      ? 'rgba(16, 185, 129, 0.2)'
+                                      : 'rgba(234, 179, 8, 0.2)',
+                                  color:
+                                    sourcePings[source.id] === 'timeout'
+                                      ? '#ef4444'
+                                      : (sourcePings[source.id] as number) < 300
+                                      ? '#10b981'
+                                      : '#eab308'
+                                }}
+                              >
+                                {sourcePings[source.id] === 'timeout' ? '超时' : `${sourcePings[source.id]}ms`}
+                              </span>
+                            )}
+                          </div>
                           <span style={{ fontSize: '10px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {source.url}
                           </span>

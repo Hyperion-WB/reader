@@ -119,6 +119,31 @@ export default function App() {
     StorageService.saveSources(sources);
   }, [sources]);
 
+  // Today Active Reading Timer (Tracks reading minutes for stats)
+  const [todayReadingSeconds, setTodayReadingSeconds] = useState<number>(() => {
+    try {
+      const todayKey = `moyu_reading_${new Date().toISOString().slice(0, 10)}`;
+      const val = localStorage.getItem(todayKey);
+      return val ? parseInt(val, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible' && !isBossHidden) {
+        setTodayReadingSeconds((prev) => {
+          const next = prev + 5;
+          const todayKey = `moyu_reading_${new Date().toISOString().slice(0, 10)}`;
+          localStorage.setItem(todayKey, String(next));
+          return next;
+        });
+      }
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [isBossHidden]);
+
   // Global Boss Key Handler
   const handleBossKeyTrigger = useCallback(async () => {
     if (isTauri()) {
@@ -703,6 +728,7 @@ export default function App() {
         onChangeChameleonMode={setChameleonMode}
         onOpenGuide={() => setShowOnboarding(true)}
         onOpenShortcuts={() => setShowShortcutsModal(true)}
+        todayReadingMinutes={Math.floor(todayReadingSeconds / 60)}
       />
 
       {/* Close Action Preference Confirmation Modal (Tray vs Exit) */}

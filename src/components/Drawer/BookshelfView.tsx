@@ -45,7 +45,7 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '10px', padding: '2px 0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden', gap: '10px', padding: '2px 0' }}>
       {/* Top Action Bar */}
       <div style={{ display: 'flex', gap: '8px', padding: '2px 0' }}>
         <button
@@ -150,10 +150,13 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
         className="smooth-scroll"
         style={{
           flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           gap: viewMode === 'minimal' ? '4px' : '8px',
-          padding: '4px 2px 36px 2px',
+          padding: '4px 2px 48px 2px',
           boxSizing: 'border-box'
         }}
       >

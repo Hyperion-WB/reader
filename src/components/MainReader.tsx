@@ -6,7 +6,7 @@ import { TTSBar } from './TTSBar';
 import { TTSService } from '../services/ttsService';
 import { ShortcutsModal } from './ShortcutsModal';
 import { ChapterSearchBar } from './ChapterSearchBar';
-import { Loader2, BookmarkPlus, Pause } from 'lucide-react';
+import { Loader2, BookmarkPlus, Pause, Bookmark as BookmarkIcon } from 'lucide-react';
 
 interface MainReaderProps {
   book: Book;
@@ -38,6 +38,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
   const [selectedText, setSelectedText] = useState<string>('');
   const [selectionPos, setSelectionPos] = useState<{ x: number; y: number } | null>(null);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // In-Chapter Keyword Search
   const [showChapterSearch, setShowChapterSearch] = useState(false);
@@ -336,8 +337,25 @@ export const MainReader: React.FC<MainReaderProps> = ({
       });
       setSelectedText('');
       setSelectionPos(null);
-      alert('已保存至书签与高亮！可在控制中心「书签」中查看');
+      setToastMessage('已成功添加所选高亮书签');
+      setTimeout(() => setToastMessage(null), 2200);
     }
+  };
+
+  const handleQuickAddBookmark = () => {
+    const excerpt = paragraphs[0] ? paragraphs[0].slice(0, 80) : currentChapter.title;
+    onAddBookmark({
+      id: `bm-${Date.now()}`,
+      bookId: book.id,
+      chapterIndex: book.currentChapterIndex,
+      chapterTitle: currentChapter.title,
+      selectedText: selectedText || excerpt,
+      timestamp: Date.now()
+    });
+    setSelectedText('');
+    setSelectionPos(null);
+    setToastMessage(`已为【${currentChapter.title}】添加书签`);
+    setTimeout(() => setToastMessage(null), 2200);
   };
 
   // TTS Speech Actions
@@ -882,7 +900,34 @@ export const MainReader: React.FC<MainReaderProps> = ({
         isAutoScrolling={isAutoScrolling}
         onToggleAutoScroll={() => setIsAutoScrolling((prev) => !prev)}
         onOpenShortcuts={() => setShowShortcutsModal(true)}
+        onAddBookmark={handleQuickAddBookmark}
       />
+
+      {/* Floating Toast Notification Pill */}
+      {toastMessage && (
+        <div
+          className="frosted-menu-solid animate-ios-spring tauri-no-drag"
+          style={{
+            position: 'fixed',
+            top: '72px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '8px 18px',
+            borderRadius: '9999px',
+            fontSize: '12.5px',
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.45)'
+          }}
+        >
+          <BookmarkIcon size={14} style={{ color: 'var(--accent-color)' }} />
+          <span>{toastMessage}</span>
+        </div>
+      )}
 
       {/* Shortcuts Guide Modal */}
       <ShortcutsModal

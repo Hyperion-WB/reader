@@ -153,7 +153,20 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
   };
 
   return (
-    <div className="smooth-scroll" style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px', padding: '2px 4px 36px 2px', boxSizing: 'border-box' }}>
+    <div
+      className="smooth-scroll"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        gap: '14px',
+        padding: '2px 4px 48px 2px',
+        boxSizing: 'border-box'
+      }}
+    >
       
       {/* 0. Reading Mode Switcher */}
       <div className="frosted-card" style={{ padding: '12px 14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>

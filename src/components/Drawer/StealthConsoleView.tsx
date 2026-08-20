@@ -175,7 +175,20 @@ export const StealthConsoleView: React.FC<StealthConsoleViewProps> = ({
   ];
 
   return (
-    <div className="smooth-scroll" style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px', padding: '2px 4px 36px 2px', boxSizing: 'border-box' }}>
+    <div
+      className="smooth-scroll"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        gap: '14px',
+        padding: '2px 4px 48px 2px',
+        boxSizing: 'border-box'
+      }}
+    >
       {/* 1. All 10 Camouflage Modes Matrix Grid */}
       <div className="frosted-card" style={{ padding: '16px', borderRadius: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

@@ -167,8 +167,18 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
 
   const totalEnabled = sources.filter((s) => s.enabled).length;
 
+  const handleToggleExpandAll = () => {
+    const groupKeys = Array.from(groupedSources.keys());
+    const areAllExpanded = groupKeys.length > 0 && groupKeys.every((k) => expandedGroups[k] !== false);
+    const updated: Record<string, boolean> = {};
+    groupKeys.forEach((k) => {
+      updated[k] = !areAllExpanded;
+    });
+    setExpandedGroups(updated);
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '10px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden', gap: '10px' }}>
       {/* Search & Import Header */}
       <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1 }}>
@@ -225,6 +235,14 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
 
         <div style={{ display: 'flex', gap: '4px' }}>
           <button
+            onClick={handleToggleExpandAll}
+            className="frosted-btn"
+            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px' }}
+            title="全部折叠 / 全部展开"
+          >
+            折叠/展开
+          </button>
+          <button
             onClick={handleEnableAll}
             className="frosted-btn"
             style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px' }}
@@ -269,8 +287,21 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
         </div>
       </div>
 
-      {/* Grouped Book Sources Scroll Container (Zero Lag) */}
-      <div className="smooth-scroll" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', padding: '2px 2px 36px 2px', boxSizing: 'border-box' }}>
+      {/* Grouped Book Sources Scroll Container (Zero Lag, Smooth Scrolling) */}
+      <div
+        className="smooth-scroll"
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          padding: '2px 2px 48px 2px',
+          boxSizing: 'border-box'
+        }}
+      >
         {groupedSources.size === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)', fontSize: '12px' }}>
             未找到任何匹配的书源或书源列表为空

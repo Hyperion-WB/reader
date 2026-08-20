@@ -10,7 +10,8 @@ import {
   Pause,
   HelpCircle,
   BookOpen,
-  AlignJustify
+  AlignJustify,
+  Bookmark
 } from 'lucide-react';
 import { ThemeConfig } from '../types/reader';
 
@@ -31,6 +32,7 @@ interface HUDControlsProps {
   isAutoScrolling: boolean;
   onToggleAutoScroll: () => void;
   onOpenShortcuts: () => void;
+  onAddBookmark?: () => void;
 }
 
 export const HUDControls: React.FC<HUDControlsProps> = ({
@@ -48,7 +50,8 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
   onToggleTTS,
   isAutoScrolling,
   onToggleAutoScroll,
-  onOpenShortcuts
+  onOpenShortcuts,
+  onAddBookmark
 }) => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -272,6 +275,19 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
           >
             {themeConfig.themePreset === 'dark-oled' ? <Sun size={13} /> : <Moon size={13} />}
           </button>
+
+          {/* Quick Add Bookmark Button */}
+          {onAddBookmark && (
+            <button
+              onClick={onAddBookmark}
+              className="frosted-btn"
+              style={{ padding: '4px 6px', borderRadius: '9999px', flexShrink: 0 }}
+              data-tooltip="添加当前阅读书签"
+              data-tooltip-pos="top"
+            >
+              <Bookmark size={13} style={{ color: 'var(--accent-color)' }} />
+            </button>
+          )}
 
           {/* Shortcuts Modal Guide Button */}
           <button

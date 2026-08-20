@@ -43,7 +43,7 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden', gap: '10px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px' }}>
         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <BookmarkIcon size={14} style={{ color: 'var(--accent-color)' }} />
@@ -67,10 +67,13 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
         className="smooth-scroll"
         style={{
           flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           gap: '8px',
-          padding: '2px 2px 36px 2px',
+          padding: '2px 2px 48px 2px',
           boxSizing: 'border-box'
         }}
       >

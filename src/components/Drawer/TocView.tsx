@@ -108,7 +108,7 @@ export const TocView: React.FC<TocViewProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '10px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden', gap: '10px' }}>
       {/* Search & Actions Header */}
       <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1 }}>
@@ -216,6 +216,9 @@ export const TocView: React.FC<TocViewProps> = ({
         className="smooth-scroll"
         style={{
           flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
           position: 'relative',
           borderRadius: '14px',
           paddingBottom: '24px',

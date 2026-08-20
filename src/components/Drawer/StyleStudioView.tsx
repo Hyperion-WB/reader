@@ -152,6 +152,32 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
     });
   };
 
+  const handleCustomFontUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fontName = `CustomUserFont_${Date.now()}`;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64) {
+        try {
+          const fontFace = new FontFace(fontName, `url(${base64})`);
+          fontFace.load().then((loaded) => {
+            (document.fonts as any).add(loaded);
+            onUpdateTheme({
+              ...themeConfig,
+              fontFamily: `"${fontName}", system-ui, sans-serif`
+            });
+            alert('自定义字体加载成功！已实时应用到当前阅读器');
+          });
+        } catch {
+          alert('字体加载失败，请使用标准的 TTF/OTF/WOFF2 文件');
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div
       className="smooth-scroll"
@@ -432,7 +458,31 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
         </div>
 
         <div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>字体选择</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>字体选择</div>
+            <label
+              className="frosted-btn"
+              style={{
+                padding: '2px 8px',
+                fontSize: '11px',
+                borderRadius: '9999px',
+                cursor: 'pointer',
+                color: 'var(--accent-color)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <Upload size={11} />
+              <span>上传本地字体 (.ttf/.woff2)</span>
+              <input
+                type="file"
+                accept=".ttf,.otf,.woff,.woff2"
+                onChange={handleCustomFontUpload}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </div>
           <FrostedSelect
             options={fonts}
             value={themeConfig.fontFamily}

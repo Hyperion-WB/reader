@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Book } from '../types/reader';
-import { X, Palette, Check, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { X, Palette, Check, Image as ImageIcon, Sparkles, Upload } from 'lucide-react';
 
 interface CoverCustomizerModalProps {
   book: Book | null;
@@ -36,6 +36,21 @@ export const CoverCustomizerModal: React.FC<CoverCustomizerModalProps> = ({
     setSelectedStyle(value);
     onUpdateCover(book.id, value);
     onClose();
+  };
+
+  const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64) {
+        setSelectedStyle(base64);
+        onUpdateCover(book.id, base64);
+        onClose();
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleApplyCustomUrl = () => {
@@ -226,8 +241,22 @@ export const CoverCustomizerModal: React.FC<CoverCustomizerModalProps> = ({
               style={{ flex: 1, padding: '8px 12px', borderRadius: '12px' }}
             >
               <Sparkles size={14} style={{ color: 'var(--accent-color)' }} />
-              <span>{isSearchingOnline ? '搜寻中...' : '根据书名智能匹配'}</span>
+              <span>{isSearchingOnline ? '搜寻中...' : '智能匹配封面'}</span>
             </button>
+
+            <label
+              className="frosted-btn"
+              style={{ flex: 1, padding: '8px 12px', borderRadius: '12px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+            >
+              <Upload size={14} style={{ color: 'var(--accent-color)' }} />
+              <span>上传本地图片</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleLocalImageUpload}
+                style={{ display: 'none' }}
+              />
+            </label>
           </div>
 
           <div style={{ display: 'flex', gap: '6px' }}>

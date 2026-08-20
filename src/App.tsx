@@ -373,9 +373,9 @@ export default function App() {
   };
 
   const handleWindowMouseLeave = () => {
-    // DO NOT FADE IF:
-    // 1. User locked brightness (isFadeLocked === true)
-    // 2. An input or textarea is currently focused (prevents IME candidate window from hiding the page!)
+    // Dispatch event to auto-close any floating popups or dropdowns immediately
+    window.dispatchEvent(new Event('close-all-popups'));
+
     const activeEl = document.activeElement;
     const isInputFocused =
       activeEl &&

@@ -113,14 +113,25 @@ export const MainReader: React.FC<MainReaderProps> = ({
     };
   }, [book.id, book.currentChapterIndex, currentChapter.id, currentChapter.url]);
 
-  // Handle Scroll Progress
-  const handleScroll = () => {
-    if (containerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-      const progress = Math.min(100, Math.round((scrollTop / Math.max(1, scrollHeight - clientHeight)) * 100));
-      onUpdateBookProgress(book.currentChapterIndex, progress);
-    }
-  };
+  // Throttled Scroll Progress Sync using requestAnimationFrame & delta checks (Zero-Lag 120 FPS)
+  const lastProgressRef = useRef<number>(-1);
+  const scrollRafRef = useRef<number | null>(null);
+
+  const handleScroll = useCallback(() => {
+    if (scrollRafRef.current) return;
+
+    scrollRafRef.current = requestAnimationFrame(() => {
+      scrollRafRef.current = null;
+      if (containerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+        const progress = Math.min(100, Math.round((scrollTop / Math.max(1, scrollHeight - clientHeight)) * 100));
+        if (progress !== lastProgressRef.current) {
+          lastProgressRef.current = progress;
+          onUpdateBookProgress(book.currentChapterIndex, progress);
+        }
+      }
+    });
+  }, [book.currentChapterIndex, onUpdateBookProgress]);
 
   // Auto-scroll loop
   const autoScrollStep = useCallback(() => {
@@ -464,6 +475,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
         ref={containerRef}
         onScroll={handleScroll}
         onMouseUp={handleMouseUp}
+        className="smooth-scroll reader-scroll-viewport"
         style={{
           position: 'relative',
           zIndex: 1,
@@ -476,7 +488,10 @@ export const MainReader: React.FC<MainReaderProps> = ({
           fontSize: `${themeConfig.fontSize}px`,
           lineHeight: themeConfig.lineHeight,
           letterSpacing: `${themeConfig.letterSpacing}px`,
-          color: readingBg.color || 'var(--text-primary)'
+          color: readingBg.color || 'var(--text-primary)',
+          transform: 'translateZ(0)',
+          willChange: 'scroll-position',
+          contain: 'paint layout'
         }}
       >
         {/* Chapter Title */}

@@ -1,4 +1,8 @@
-use tauri::{AppHandle, Manager, WebviewWindow};
+use tauri::{
+    menu::{Menu, MenuItem},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    AppHandle, Manager, WebviewWindow,
+};
 
 #[tauri::command]
 fn app_minimize(window: WebviewWindow) -> Result<(), String> {
@@ -48,6 +52,7 @@ fn toggle_boss_key(app: AppHandle) -> Result<bool, String> {
             Ok(false)
         } else {
             let _ = window.show();
+            let _ = window.unminimize();
             let _ = window.set_focus();
             Ok(true)
         }
@@ -64,6 +69,62 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .setup(|app| {
+            // Build Native Windows System Tray Menu
+            let show_i = MenuItem::with_id(app, "show", "显示摸鱼阅读", true, None::<&str>)?;
+            let hide_i = MenuItem::with_id(app, "hide", "隐藏窗口 (老板键 Alt+`)", true, None::<&str>)?;
+            let quit_i = MenuItem::with_id(app, "quit", "彻底退出摸鱼阅读", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&show_i, &hide_i, &quit_i])?;
+
+            if let Some(icon) = app.default_window_icon() {
+                let _tray = TrayIconBuilder::new()
+                    .icon(icon.clone())
+                    .tooltip("摸鱼阅读 · 专为高效摸鱼打造 (Alt+` 随时唤醒)")
+                    .menu(&menu)
+                    .show_menu_on_left_click(false)
+                    .on_menu_event(|app, event| match event.id.as_ref() {
+                        "show" => {
+                            if let Some(win) = app.get_webview_window("main") {
+                                let _ = win.show();
+                                let _ = win.unminimize();
+                                let _ = win.set_focus();
+                            }
+                        }
+                        "hide" => {
+                            if let Some(win) = app.get_webview_window("main") {
+                                let _ = win.hide();
+                            }
+                        }
+                        "quit" => {
+                            app.exit(0);
+                        }
+                        _ => {}
+                    })
+                    .on_tray_icon_event(|tray, event| {
+                        if let TrayIconEvent::Click {
+                            button: MouseButton::Left,
+                            button_state: MouseButtonState::Up,
+                            ..
+                        } = event
+                        {
+                            let app = tray.app_handle();
+                            if let Some(win) = app.get_webview_window("main") {
+                                let is_visible = win.is_visible().unwrap_or(true);
+                                if is_visible {
+                                    let _ = win.hide();
+                                } else {
+                                    let _ = win.show();
+                                    let _ = win.unminimize();
+                                    let _ = win.set_focus();
+                                }
+                            }
+                        }
+                    })
+                    .build(app)?;
+            }
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             app_minimize,
             app_toggle_maximize,

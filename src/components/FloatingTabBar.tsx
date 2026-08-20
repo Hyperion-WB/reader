@@ -113,6 +113,11 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
   }, [activeBookId, openTabIds, openBooks.length]);
 
   useEffect(() => {
+    const handleClose = () => {
+      setShowDisguiseMenu(false);
+      setShowBookSwitcherMenu(false);
+    };
+
     const handleClickOutside = (e: MouseEvent) => {
       if (disguiseMenuRef.current && !disguiseMenuRef.current.contains(e.target as Node)) {
         setShowDisguiseMenu(false);
@@ -121,10 +126,19 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
         setShowBookSwitcherMenu(false);
       }
     };
+
     if (showDisguiseMenu || showBookSwitcherMenu) {
       document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('blur', handleClose);
+      document.addEventListener('mouseleave', handleClose);
+      window.addEventListener('close-all-popups', handleClose);
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('blur', handleClose);
+      document.removeEventListener('mouseleave', handleClose);
+      window.removeEventListener('close-all-popups', handleClose);
+    };
   }, [showDisguiseMenu, showBookSwitcherMenu]);
 
   return (
@@ -264,7 +278,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
               {/* Floating Dropdown for all open books */}
               {showBookSwitcherMenu && (
                 <div
-                  className="frosted-panel animate-ios-spring"
+                  className="frosted-menu-solid animate-ios-spring"
                   style={{
                     position: 'absolute',
                     top: 'calc(100% + 6px)',
@@ -276,9 +290,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                     zIndex: 999999,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '4px',
-                    boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
-                    border: '1px solid var(--glass-border)'
+                    gap: '4px'
                   }}
                 >
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', padding: '2px 6px', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
@@ -505,7 +517,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
 
               {showDisguiseMenu && (
                 <div
-                  className="frosted-panel animate-ios-spring"
+                  className="frosted-menu-solid animate-ios-spring"
                   style={{
                     position: 'absolute',
                     right: 0,
@@ -516,9 +528,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                     zIndex: 999999,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '4px',
-                    boxShadow: '0 16px 40px rgba(0, 0, 0, 0.45)',
-                    border: '1px solid var(--glass-border)'
+                    gap: '4px'
                   }}
                 >
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', padding: '2px 8px', fontWeight: 600 }}>

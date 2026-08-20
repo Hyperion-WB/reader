@@ -196,6 +196,23 @@ body, html {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
+/* High-Contrast Non-Bleed Solid Frosted Menu / Popover (100% Readable, Zero Underneath Text Clashing) */
+.frosted-menu-solid {
+  background: rgba(22, 26, 35, 0.96) !important;
+  backdrop-filter: blur(40px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+}
+
+.theme-day-glass .frosted-menu-solid {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+  color: #0f172a !important;
+}
+
 /* Child Card inside Drawer / Modal (Ultra-Lightweight, 120 FPS Zero-Jank, Clean Inset Border) */
 .frosted-card {
   background: var(--glass-surface);
@@ -217,6 +234,14 @@ body, html {
   -webkit-overflow-scrolling: touch;
   will-change: scroll-position;
   transform: translateZ(0);
+}
+
+.reader-scroll-viewport {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: scroll-position;
+  contain: paint layout;
+  overscroll-behavior: contain;
 }
 
 /* iOS Dynamic Island Floating Capsule Bar */

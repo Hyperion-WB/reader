@@ -1,6 +1,6 @@
 [package]
 name = "moyu-reader"
-version = "1.1.0"
+version = "1.1.1"
 description = "摸鱼阅读 - Windows 通透磨砂小说与漫画阅读器"
 authors = ["摸鱼阅读团队 (MoYu Reader Team)"]
 edition = "2021"

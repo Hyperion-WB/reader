@@ -70,14 +70,24 @@ export const FrostedSelect: React.FC<FrostedSelectProps> = ({
       }
     };
 
+    const handleClose = () => {
+      setIsOpen(false);
+    };
+
     window.addEventListener('resize', handleScrollOrResize);
     window.addEventListener('scroll', handleScrollOrResize, true);
     document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('blur', handleClose);
+    document.addEventListener('mouseleave', handleClose);
+    window.addEventListener('close-all-popups', handleClose);
 
     return () => {
       window.removeEventListener('resize', handleScrollOrResize);
       window.removeEventListener('scroll', handleScrollOrResize, true);
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('blur', handleClose);
+      document.removeEventListener('mouseleave', handleClose);
+      window.removeEventListener('close-all-popups', handleClose);
     };
   }, [isOpen]);
 
@@ -125,7 +135,7 @@ export const FrostedSelect: React.FC<FrostedSelectProps> = ({
       {isOpen &&
         createPortal(
           <div
-            className="frosted-select-portal animate-ios-spring"
+            className="frosted-select-portal frosted-menu-solid animate-ios-spring"
             style={{
               position: 'fixed',
               top: `${popoverPos.top}px`,
@@ -136,12 +146,7 @@ export const FrostedSelect: React.FC<FrostedSelectProps> = ({
               borderRadius: '14px',
               padding: '5px',
               boxSizing: 'border-box',
-              background: 'var(--bg-app)',
-              backdropFilter: 'blur(36px) saturate(200%)',
-              WebkitBackdropFilter: 'blur(36px) saturate(200%)',
-              zIndex: 999999,
-              boxShadow: '0 16px 40px rgba(0, 0, 0, 0.35), 0 2px 10px rgba(0, 0, 0, 0.15)',
-              border: '1px solid var(--glass-border-hover)'
+              zIndex: 999999
             }}
           >
             {options.map((option) => {

@@ -116,7 +116,7 @@ export const StickyNoteMode: React.FC<StickyNoteModeProps> = ({
         }}
       >
         <div style={{ fontWeight: 600, marginBottom: '12px', color: '#b78103' }}>
-          📌 待办备忘 / {currentChapter?.title || '今日计划'}
+          待办备忘 / {currentChapter?.title || '今日计划'}
         </div>
         {currentParas.map((para, idx) => (
           <p key={idx} style={{ marginBottom: '10px', textIndent: '1.5em' }}>

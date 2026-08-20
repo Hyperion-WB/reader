@@ -340,9 +340,9 @@ export const StealthConsoleView: React.FC<StealthConsoleViewProps> = ({
 
         <FrostedSelect
           options={[
-            { label: '🔘 每次点击时弹出询问', value: 'ask' },
-            { label: '📌 最小化到系统托盘 (保持后台运行)', value: 'tray' },
-            { label: '❌ 彻底退出程序', value: 'exit' }
+            { label: '每次点击关闭时询问', value: 'ask' },
+            { label: '最小化到系统托盘 (保持后台运行)', value: 'tray' },
+            { label: '彻底退出程序', value: 'exit' }
           ]}
           value={localStorage.getItem('liquid_reader_close_action') || 'ask'}
           onChange={(val) => {

@@ -11,31 +11,40 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
 
   const shortcutGroups = [
     {
-      category: '阅读与翻页',
+      category: '双阅读模式与操作',
       items: [
-        { key: 'Space', desc: '开启 / 暂停自动滚屏' },
-        { key: '← / →', desc: '上一章 / 下一章' },
-        { key: 'J / K', desc: '极客翻页 (下一章 / 上一章)' },
-        { key: 'PageUp / PageDown', desc: '快速上下滚屏' }
+        { key: 'D / → / Space', desc: '翻页模式：翻向下一页' },
+        { key: 'A / ←', desc: '翻页模式：翻向上一页' },
+        { key: 'Space 空格', desc: '滚动模式：开启 / 暂停自动滚屏' },
+        { key: '] / J', desc: '快速跳转至下一章' },
+        { key: '[ / K', desc: '快速跳转至上一章' },
+        { key: 'PageUp / PageDn', desc: '快速上下滚屏 / 翻页' },
+        { key: 'Ctrl + + / -', desc: '快速放大 / 缩小阅读字号' },
+        { key: 'Ctrl + F', desc: '呼出正文全文关键词搜索条' }
       ]
     },
     {
-      category: '办公隐蔽与伪装',
+      category: '10 大办公摸鱼伪装',
       items: [
-        { key: 'Alt + `', desc: '极速老板键 (0ms 瞬间隐身/唤醒)' },
-        { key: 'Alt + E', desc: '一键进入 / 退出 Excel 表格伪装' },
-        { key: 'Alt + C', desc: '一键进入 / 退出 VS Code 代码伪装' },
-        { key: 'Alt + I', desc: '一键进入 / 退出 IntelliJ IDEA 伪装' },
-        { key: 'Alt + 1', desc: '一键切换为 24px 极简单行状态条' },
+        { key: 'Alt + `', desc: '0ms 老板键 (瞬间抹除隐身 / 唤回)' },
+        { key: 'Alt + E', desc: 'Excel 365 商业统计表格' },
+        { key: 'Alt + W', desc: 'Word 经典商务公文排版' },
+        { key: 'Alt + O', desc: 'Outlook 商务邮件客户端' },
+        { key: 'Alt + C', desc: '企业微信 / 钉钉群聊消息流' },
+        { key: 'Alt + V', desc: 'VS Code 编辑器代码模式' },
+        { key: 'Alt + I', desc: 'IntelliJ IDEA 工程模式' },
+        { key: 'Alt + P', desc: 'PowerPoint 汇报幻灯片' },
+        { key: 'Alt + N', desc: '桌面便利贴小贴片' },
+        { key: 'Alt + T', desc: '24px 极窄底部股票行情条' },
         { key: 'Esc', desc: '退出任何伪装模式 / 关闭侧边栏' }
       ]
     },
     {
-      category: '控制与导航',
+      category: '控制中心与窗口',
       items: [
-        { key: 'Alt + M', desc: '打开 / 关闭侧边控制中心' },
-        { key: 'Ctrl + F', desc: '全局搜书 / 书源管理' },
-        { key: '?', desc: '打开快捷键指引' }
+        { key: 'Alt + M', desc: '打开 / 关闭控制中心 (书架/目录/搜书)' },
+        { key: 'F1 / ?', desc: '随时查看本快捷键指南' },
+        { key: '拖拽顶栏', desc: '任意移动无边框悬浮小窗位置' }
       ]
     }
   ];

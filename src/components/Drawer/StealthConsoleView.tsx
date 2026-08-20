@@ -17,7 +17,8 @@ import {
   Presentation,
   StickyNote,
   Activity,
-  Sparkles
+  Sparkles,
+  Power
 } from 'lucide-react';
 import { windowControls } from '../../services/tauriBridge';
 import { IOSSwitch } from '../IOSSwitch';
@@ -330,7 +331,32 @@ export const StealthConsoleView: React.FC<StealthConsoleViewProps> = ({
         </div>
       </div>
 
-      {/* 5. Backup & Cloud Sync */}
+      {/* 5. Window Close Action Preference */}
+      <div className="frosted-card" style={{ padding: '16px', borderRadius: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Power size={15} style={{ color: 'var(--accent-color)' }} />
+          <span>点击关闭 (X) 时的行为</span>
+        </div>
+
+        <FrostedSelect
+          options={[
+            { label: '🔘 每次点击时弹出询问', value: 'ask' },
+            { label: '📌 最小化到系统托盘 (保持后台运行)', value: 'tray' },
+            { label: '❌ 彻底退出程序', value: 'exit' }
+          ]}
+          value={localStorage.getItem('liquid_reader_close_action') || 'ask'}
+          onChange={(val) => {
+            localStorage.setItem('liquid_reader_close_action', val);
+            // trigger custom storage event for sync
+            window.dispatchEvent(new Event('storage'));
+          }}
+        />
+        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+          选择“最小化到系统托盘”可保持后台运行，随时使用快捷键 <kbd style={{ padding: '1px 4px', borderRadius: '4px', background: 'rgba(0,0,0,0.2)', fontSize: '10px' }}>Alt + `</kbd> 唤醒。
+        </div>
+      </div>
+
+      {/* 6. Backup & Cloud Sync */}
       <div className="frosted-card" style={{ padding: '16px', borderRadius: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Monitor size={15} style={{ color: 'var(--accent-color)' }} />

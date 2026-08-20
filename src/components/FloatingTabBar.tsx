@@ -20,7 +20,8 @@ import {
   Unlock,
   Mail,
   MessageSquare,
-  Presentation
+  Presentation,
+  Keyboard
 } from 'lucide-react';
 import { Book, ChameleonModeType } from '../types/reader';
 import { windowControls } from '../services/tauriBridge';
@@ -41,6 +42,8 @@ interface FloatingTabBarProps {
   isFadeLocked?: boolean;
   onToggleFadeLock?: () => void;
   onTriggerBossKey: () => void;
+  onRequestClose?: () => void;
+  onOpenShortcuts?: () => void;
 }
 
 export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
@@ -57,7 +60,9 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
   onToggleAlwaysOnTop,
   isFadeLocked = false,
   onToggleFadeLock,
-  onTriggerBossKey
+  onTriggerBossKey,
+  onRequestClose,
+  onOpenShortcuts
 }) => {
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -636,6 +641,23 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
               {isFadeLocked ? <Lock size={12} /> : <Unlock size={12} />}
             </button>
 
+            {/* Keyboard Shortcuts Cheatsheet Trigger */}
+            {onOpenShortcuts && (
+              <button
+                onClick={onOpenShortcuts}
+                className="frosted-btn"
+                data-tooltip="快捷键速查 (F1 / ?)"
+                data-tooltip-pos="bottom"
+                style={{
+                  padding: '4px 6px',
+                  borderRadius: '9999px',
+                  color: 'var(--text-primary)'
+                }}
+              >
+                <Keyboard size={12} />
+              </button>
+            )}
+
             {/* Redesigned Apple Luxury Traffic Light Window Control Buttons */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginLeft: '4px' }}>
               {/* Minimize (Amber Glow) */}
@@ -708,8 +730,8 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
 
               {/* Close (Crimson Red Glow) */}
               <button
-                onClick={() => windowControls.close()}
-                data-tooltip="关闭应用"
+                onClick={() => (onRequestClose ? onRequestClose() : windowControls.close())}
+                data-tooltip="关闭摸鱼阅读 (Alt+F4)"
                 data-tooltip-pos="bottom"
                 style={{
                   width: '20px',

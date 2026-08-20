@@ -17,6 +17,7 @@ import {
   Palette,
   ShieldCheck,
   HelpCircle,
+  Keyboard,
   X
 } from 'lucide-react';
 
@@ -46,6 +47,7 @@ interface GlassDrawerProps {
   onUpdateBookCover?: (bookId: string, cover: string) => void;
   onChangeChameleonMode?: (mode: ChameleonModeType) => void;
   onOpenGuide?: () => void;
+  onOpenShortcuts?: () => void;
 }
 
 export const GlassDrawer: React.FC<GlassDrawerProps> = ({
@@ -71,7 +73,8 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
   onReloadAllData,
   onUpdateBookCover,
   onChangeChameleonMode,
-  onOpenGuide
+  onOpenGuide,
+  onOpenShortcuts
 }) => {
   const [activeTab, setActiveTab] = useState<DrawerTab>('bookshelf');
 
@@ -144,12 +147,23 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {onOpenShortcuts && (
+              <button
+                onClick={onOpenShortcuts}
+                className="frosted-btn"
+                style={{ padding: '5px', borderRadius: '50%' }}
+                data-tooltip="全局快捷键速查 (F1 / ?)"
+                data-tooltip-pos="bottom"
+              >
+                <Keyboard size={14} />
+              </button>
+            )}
             {onOpenGuide && (
               <button
                 onClick={onOpenGuide}
                 className="frosted-btn"
                 style={{ padding: '5px', borderRadius: '50%' }}
-                data-tooltip="应用介绍与快捷键指南"
+                data-tooltip="应用介绍与新手指南"
                 data-tooltip-pos="bottom"
               >
                 <HelpCircle size={14} />

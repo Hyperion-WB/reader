@@ -1,13 +1,54 @@
 import JSZip from 'jszip';
 import { Book, Chapter } from '../types/reader';
 
+/**
+ * Smart Character Encoding Detection & Auto-Decoding Engine
+ * Solves mojibake for Chinese web novels (GBK, GB2312, GB18030, UTF-8, UTF-16, Big5)
+ */
+export const decodeSmartText = (buffer: ArrayBuffer | Uint8Array): string => {
+  const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+  if (bytes.length === 0) return '';
+
+  // 1. Check BOM Header
+  if (bytes.length >= 3 && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
+    return new TextDecoder('utf-8').decode(bytes.subarray(3));
+  }
+  if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xFE) {
+    return new TextDecoder('utf-16le').decode(bytes.subarray(2));
+  }
+  if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) {
+    return new TextDecoder('utf-16be').decode(bytes.subarray(2));
+  }
+
+  // 2. Try Strict UTF-8 decoding
+  try {
+    const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+    const decoded = utf8Decoder.decode(bytes);
+    return decoded;
+  } catch {
+    // 3. Fallback to GB18030 (standard superset covering GBK and GB2312)
+    try {
+      const gbkDecoder = new TextDecoder('gb18030');
+      return gbkDecoder.decode(bytes);
+    } catch {
+      try {
+        const big5Decoder = new TextDecoder('big5');
+        return big5Decoder.decode(bytes);
+      } catch {
+        return new TextDecoder('utf-8').decode(bytes);
+      }
+    }
+  }
+};
+
 // TXT Smart Parser
-export const parseTxtFile = (filename: string, content: string): Book => {
+export const parseTxtFile = (filename: string, contentOrBuffer: string | ArrayBuffer | Uint8Array): Book => {
+  const content = typeof contentOrBuffer === 'string' ? contentOrBuffer : decodeSmartText(contentOrBuffer);
   const bookTitle = filename.replace(/\.(txt|md|text)$/i, '');
   const chapters: Chapter[] = [];
 
   // Robust Regular Expressions for Chinese and English Chapter Titles
-  const chapterRegex = /(?:^|\r?\n)\s*(第[0-9一二三四五六七八九十百千万零两]+[章回卷节集篇部][^\r\n]{0,35}|Chapter\s+[0-9]+[^\r\n]{0,35}|[0-9]{1,4}[\.、\s]+[^\r\n]{1,35})/gi;
+  const chapterRegex = /(?:^|\r?\n)\s*(第[0-9一二三四五六七八九十百千万零两]+[章回卷节集篇部][^\r\n]{0,40}|Chapter\s+[0-9]+[^\r\n]{0,40}|(?:引子|楔子|前言|序言|尾声|后记|番外[0-9一二三四五六七八九十]*)[^\r\n]{0,30}|[0-9]{1,4}[\.、\s]+[^\r\n]{1,35})/gi;
 
   const matches: { index: number; title: string; length: number }[] = [];
   let match: RegExpExecArray | null;
@@ -343,12 +384,14 @@ export const parseUniversalLocalFile = async (file: File): Promise<Book> => {
   const ext = name.split('.').pop()?.toLowerCase() || '';
 
   if (ext === 'txt' || ext === 'text') {
-    const text = await file.text();
+    const buffer = await file.arrayBuffer();
+    const text = decodeSmartText(buffer);
     return parseTxtFile(name, text);
   }
 
   if (ext === 'md' || ext === 'markdown') {
-    const text = await file.text();
+    const buffer = await file.arrayBuffer();
+    const text = decodeSmartText(buffer);
     return parseMarkdownFile(name, text);
   }
 
@@ -357,12 +400,13 @@ export const parseUniversalLocalFile = async (file: File): Promise<Book> => {
     return parseEpubFile(name, buffer);
   }
 
-  if (ext === 'cbz' || ext === 'zip') {
+  if (ext === 'cbz' || ext === 'zip' || ext === 'cbr') {
     const buffer = await file.arrayBuffer();
     return parseComicArchive(name, buffer);
   }
 
   // Fallback for text-based unknown files
-  const text = await file.text();
+  const buffer = await file.arrayBuffer();
+  const text = decodeSmartText(buffer);
   return parseTxtFile(name, text);
 };

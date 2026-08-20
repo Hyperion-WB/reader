@@ -26,7 +26,6 @@ import {
   isTauri,
   openLocalFileDialog,
   readLocalBinaryFile,
-  readLocalTextFile,
   registerBossKeyShortcut,
   windowControls
 } from './services/tauriBridge';
@@ -35,17 +34,22 @@ import {
   parseTxtFile,
   parseComicArchive,
   parseMarkdownFile,
-  parseUniversalLocalFile
+  parseUniversalLocalFile,
+  decodeSmartText
 } from './services/localFileParser';
 import { Upload, Plus } from 'lucide-react';
 import { CuteAppIcon } from './components/CuteAppIcon';
 import { WindowResizeHandles } from './components/WindowResizeHandles';
 import { OnboardingModal } from './components/OnboardingModal';
+import { CloseConfirmModal } from './components/CloseConfirmModal';
+import { ShortcutsModal } from './components/ShortcutsModal';
 import './styles/glass.css';
 
 export default function App() {
   // Main State
   const [books, setBooks] = useState<Book[]>(() => StorageService.getBooks());
+  const [showCloseConfirmModal, setShowCloseConfirmModal] = useState<boolean>(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState<boolean>(false);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(() => {
     try {
       return localStorage.getItem('liquid_reader_has_seen_onboarding_v2') !== 'true';
@@ -182,6 +186,11 @@ export default function App() {
         e.preventDefault();
         handleBossKeyTrigger();
       }
+      // Open Shortcuts Modal on F1 or ?
+      else if ((e.key === 'F1' || e.key === '?') && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+        e.preventDefault();
+        setShowShortcutsModal((prev) => !prev);
+      }
       // Chapter Navigation Shortcuts: [ and ]
       else if (e.key === '[' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
         e.preventDefault();
@@ -195,6 +204,30 @@ export default function App() {
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [stealthConfig, handleBossKeyTrigger]);
+
+  // Window Close Behavior (Tray vs Exit)
+  const handleRequestClose = () => {
+    const action = localStorage.getItem('liquid_reader_close_action') || 'ask';
+    if (action === 'tray') {
+      windowControls.hide();
+    } else if (action === 'exit') {
+      windowControls.close();
+    } else {
+      setShowCloseConfirmModal(true);
+    }
+  };
+
+  const handleConfirmClose = (action: 'tray' | 'exit', remember: boolean) => {
+    if (remember) {
+      localStorage.setItem('liquid_reader_close_action', action);
+    }
+    setShowCloseConfirmModal(false);
+    if (action === 'tray') {
+      windowControls.hide();
+    } else {
+      windowControls.close();
+    }
+  };
 
   // Tab & Book Actions
   const handleSelectBook = (id: string) => {
@@ -301,11 +334,12 @@ export default function App() {
           const buffer = await readLocalBinaryFile(filePath);
           importedBook = await parseComicArchive(fileName, buffer);
         } else if (lowerName.endsWith('.md') || lowerName.endsWith('.markdown')) {
-          const text = await readLocalTextFile(filePath);
+          const buffer = await readLocalBinaryFile(filePath);
+          const text = decodeSmartText(buffer);
           importedBook = parseMarkdownFile(fileName, text);
         } else {
-          const text = await readLocalTextFile(filePath);
-          importedBook = parseTxtFile(fileName, text);
+          const buffer = await readLocalBinaryFile(filePath);
+          importedBook = parseTxtFile(fileName, buffer);
         }
         handleAddBookToShelf(importedBook);
         setIsDrawerOpen(false);
@@ -550,6 +584,8 @@ export default function App() {
         isFadeLocked={isFadeLocked}
         onToggleFadeLock={() => setIsFadeLocked((prev) => !prev)}
         onTriggerBossKey={handleBossKeyTrigger}
+        onRequestClose={handleRequestClose}
+        onOpenShortcuts={() => setShowShortcutsModal(true)}
       />
 
       {/* Main Reading Workspace or Empty Welcome State */}
@@ -666,6 +702,20 @@ export default function App() {
         }}
         onChangeChameleonMode={setChameleonMode}
         onOpenGuide={() => setShowOnboarding(true)}
+        onOpenShortcuts={() => setShowShortcutsModal(true)}
+      />
+
+      {/* Close Action Preference Confirmation Modal (Tray vs Exit) */}
+      <CloseConfirmModal
+        isOpen={showCloseConfirmModal}
+        onCancel={() => setShowCloseConfirmModal(false)}
+        onConfirm={handleConfirmClose}
+      />
+
+      {/* Global Keyboard Shortcuts Cheatsheet Modal */}
+      <ShortcutsModal
+        isOpen={showShortcutsModal}
+        onClose={() => setShowShortcutsModal(false)}
       />
 
       {/* First-Time Welcome & User Onboarding Modal */}

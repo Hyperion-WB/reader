@@ -196,9 +196,29 @@ body, html {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
+/* Sleek Frosted Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color, #38bdf8);
+}
+
 /* High-Contrast Non-Bleed Solid Frosted Menu / Popover (100% Readable, Zero Underneath Text Clashing) */
 .frosted-menu-solid {
-  background: rgba(22, 26, 35, 0.96) !important;
+  background: rgba(22, 26, 35, 0.98) !important;
   backdrop-filter: blur(40px) saturate(190%) !important;
   -webkit-backdrop-filter: blur(40px) saturate(190%) !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
@@ -206,10 +226,32 @@ body, html {
   color: #f8fafc !important;
 }
 
+.frosted-menu-solid .frosted-btn {
+  color: #f1f5f9 !important;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.frosted-menu-solid .frosted-btn:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #ffffff !important;
+}
+
 .theme-day-glass .frosted-menu-solid {
   background: rgba(255, 255, 255, 0.98) !important;
   border: 1px solid rgba(0, 0, 0, 0.12) !important;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+  color: #0f172a !important;
+}
+
+.theme-day-glass .frosted-menu-solid .frosted-btn {
+  color: #1e293b !important;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.theme-day-glass .frosted-menu-solid .frosted-btn:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
   color: #0f172a !important;
 }
 
@@ -227,13 +269,12 @@ body, html {
   border-color: var(--glass-border-hover);
 }
 
-/* High-Performance Hardware-Accelerated Smooth Scroll Container */
+/* High-Performance Smooth Scroll Container */
 .smooth-scroll {
-  overflow-y: auto;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  will-change: scroll-position;
-  transform: translateZ(0);
 }
 
 .reader-scroll-viewport {

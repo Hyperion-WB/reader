@@ -206,7 +206,7 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden', gap: '10px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', gap: '10px' }}>
       {/* Search & Import Header */}
       <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1 }}>

@@ -160,17 +160,65 @@ export const readLocalBinaryFile = async (path: string): Promise<ArrayBuffer> =>
 
 // Cross-Platform Fetch Bridge (Bypasses Web CORS via Rust plugin-http in Desktop mode)
 export const universalFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const reqHeaders: Record<string, string> = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,application/json,*/*;q=0.8',
+    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
+  };
+
+  if (options.headers) {
+    if (options.headers instanceof Headers) {
+      options.headers.forEach((val, key) => {
+        reqHeaders[key] = val;
+      });
+    } else if (typeof options.headers === 'object') {
+      Object.assign(reqHeaders, options.headers);
+    }
+  }
+
   if (isTauri()) {
     try {
       const tauriRes = await tauriFetch(url, {
-        method: options.method as any || 'GET',
-        headers: options.headers as any,
-        body: options.body as any
+        method: (options.method as any) || 'GET',
+        headers: reqHeaders as any,
+        body: options.body as any,
+        signal: options.signal as any
       });
       return tauriRes as unknown as Response;
     } catch (err) {
       console.warn('Tauri native fetch failed, falling back to browser fetch:', err);
     }
   }
-  return await fetch(url, options);
+  return await fetch(url, { ...options, headers: reqHeaders });
+};
+
+// Smart Decoder that handles GBK/GB2312/UTF-8 for Legacy Chinese Novel Sites
+export const decodeResponseText = async (response: Response): Promise<string> => {
+  try {
+    const buffer = await response.arrayBuffer();
+    const contentType = response.headers?.get?.('content-type') || '';
+    
+    // Check Content-Type header
+    if (contentType.toLowerCase().includes('gbk') || contentType.toLowerCase().includes('gb2312') || contentType.toLowerCase().includes('gb18030')) {
+      try {
+        return new TextDecoder('gbk').decode(buffer);
+      } catch {}
+    }
+
+    // Try UTF-8 first
+    const utf8Decoder = new TextDecoder('utf-8', { fatal: false });
+    const text = utf8Decoder.decode(buffer);
+
+    // If meta tag says GBK/GB2312, decode with GBK
+    const metaCharsetMatch = text.slice(0, 1500).match(/charset\s*=\s*["']?\s*(gbk|gb2312|gb18030)/i);
+    if (metaCharsetMatch) {
+      try {
+        return new TextDecoder('gbk').decode(buffer);
+      } catch {}
+    }
+
+    return text;
+  } catch {
+    return await response.text();
+  }
 };

@@ -315,7 +315,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                             padding: '6px 8px',
                             borderRadius: '10px',
                             background: isCurrent ? 'var(--accent-color)' : 'transparent',
-                            color: isCurrent ? '#fff' : 'var(--text-primary)',
+                            color: isCurrent ? '#fff' : 'inherit',
                             fontSize: '11.5px',
                             cursor: 'pointer'
                           }}
@@ -537,7 +537,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                   <button
                     onClick={() => { onChangeChameleonMode(chameleonMode === 'excel' ? 'none' : 'excel'); setShowDisguiseMenu(false); }}
                     className="frosted-btn"
-                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'excel' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'excel' ? '#fff' : 'var(--text-primary)' }}
+                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'excel' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'excel' ? '#fff' : 'inherit' }}
                   >
                     <FileSpreadsheet size={13} color="#107c41" />
                     <span>Excel 表格 [Alt+E]</span>
@@ -545,7 +545,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                   <button
                     onClick={() => { onChangeChameleonMode(chameleonMode === 'word' ? 'none' : 'word'); setShowDisguiseMenu(false); }}
                     className="frosted-btn"
-                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'word' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'word' ? '#fff' : 'var(--text-primary)' }}
+                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'word' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'word' ? '#fff' : 'inherit' }}
                   >
                     <FileText size={13} color="#2b579a" />
                     <span>Word 公文 [Alt+W]</span>
@@ -553,7 +553,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                   <button
                     onClick={() => { onChangeChameleonMode(chameleonMode === 'email' ? 'none' : 'email'); setShowDisguiseMenu(false); }}
                     className="frosted-btn"
-                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'email' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'email' ? '#fff' : 'var(--text-primary)' }}
+                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'email' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'email' ? '#fff' : 'inherit' }}
                   >
                     <Mail size={13} color="#0078d4" />
                     <span>Outlook 邮箱 [Alt+O]</span>
@@ -561,7 +561,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                   <button
                     onClick={() => { onChangeChameleonMode(chameleonMode === 'chat' ? 'none' : 'chat'); setShowDisguiseMenu(false); }}
                     className="frosted-btn"
-                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'chat' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'chat' ? '#fff' : 'var(--text-primary)' }}
+                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'chat' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'chat' ? '#fff' : 'inherit' }}
                   >
                     <MessageSquare size={13} color="#07c160" />
                     <span>企微/钉钉群聊</span>
@@ -569,7 +569,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                   <button
                     onClick={() => { onChangeChameleonMode(chameleonMode === 'ppt' ? 'none' : 'ppt'); setShowDisguiseMenu(false); }}
                     className="frosted-btn"
-                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'ppt' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'ppt' ? '#fff' : 'var(--text-primary)' }}
+                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'ppt' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'ppt' ? '#fff' : 'inherit' }}
                   >
                     <Presentation size={13} color="#d24726" />
                     <span>PowerPoint 演示</span>
@@ -577,7 +577,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                   <button
                     onClick={() => { onChangeChameleonMode(chameleonMode === 'vscode' ? 'none' : 'vscode'); setShowDisguiseMenu(false); }}
                     className="frosted-btn"
-                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'vscode' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'vscode' ? '#fff' : 'var(--text-primary)' }}
+                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'vscode' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'vscode' ? '#fff' : 'inherit' }}
                   >
                     <Code2 size={13} color="#007acc" />
                     <span>VS Code [Alt+C]</span>
@@ -585,7 +585,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                   <button
                     onClick={() => { onChangeChameleonMode(chameleonMode === 'idea' ? 'none' : 'idea'); setShowDisguiseMenu(false); }}
                     className="frosted-btn"
-                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'idea' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'idea' ? '#fff' : 'var(--text-primary)' }}
+                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'idea' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'idea' ? '#fff' : 'inherit' }}
                   >
                     <span style={{ fontWeight: 800, fontSize: '11px', color: '#ff318c' }}>IJ</span>
                     <span>IDEA 终端 [Alt+I]</span>
@@ -593,7 +593,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                   <button
                     onClick={() => { onChangeChameleonMode(chameleonMode === 'pdf' ? 'none' : 'pdf'); setShowDisguiseMenu(false); }}
                     className="frosted-btn"
-                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'pdf' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'pdf' ? '#fff' : 'var(--text-primary)' }}
+                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'pdf' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'pdf' ? '#fff' : 'inherit' }}
                   >
                     <FileBadge size={13} color="#ff4d4f" />
                     <span>PDF 论文文献</span>
@@ -601,7 +601,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                   <button
                     onClick={() => { onChangeChameleonMode(chameleonMode === 'stickynote' ? 'none' : 'stickynote'); setShowDisguiseMenu(false); }}
                     className="frosted-btn"
-                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'stickynote' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'stickynote' ? '#fff' : 'var(--text-primary)' }}
+                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'stickynote' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'stickynote' ? '#fff' : 'inherit' }}
                   >
                     <StickyNote size={13} color="#eab308" />
                     <span>便签备忘录</span>
@@ -609,7 +609,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
                   <button
                     onClick={() => { onChangeChameleonMode(chameleonMode === 'ticker' ? 'none' : 'ticker'); setShowDisguiseMenu(false); }}
                     className="frosted-btn"
-                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'ticker' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'ticker' ? '#fff' : 'var(--text-primary)' }}
+                    style={{ justifyContent: 'flex-start', padding: '6px 8px', borderRadius: '8px', fontSize: '11.5px', background: chameleonMode === 'ticker' ? 'var(--accent-color)' : 'transparent', color: chameleonMode === 'ticker' ? '#fff' : 'inherit' }}
                   >
                     <Activity size={13} color="#10b981" />
                     <span>24px 极窄状态条 [Alt+1]</span>

@@ -89,7 +89,7 @@ export const OnlineSearchView: React.FC<OnlineSearchViewProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden', gap: '10px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', gap: '10px' }}>
       {/* Search Input Bar */}
       <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px', padding: '2px 2px 4px 2px' }}>
         <div style={{ position: 'relative', flex: 1 }}>

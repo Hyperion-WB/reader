@@ -1,5 +1,5 @@
 import { BookSource, Chapter, SearchResultItem } from '../types/reader';
-import { universalFetch } from './tauriBridge';
+import { universalFetch, decodeResponseText } from './tauriBridge';
 
 export class BookSourceEngine {
   private sources: BookSource[] = [];
@@ -239,7 +239,7 @@ export class BookSourceEngine {
         });
         clearTimeout(timeoutId);
 
-        const responseText = await response.text();
+        const responseText = await decodeResponseText(response);
         if (!responseText || responseText.trim().length === 0) return;
 
         const sourceResults: SearchResultItem[] = [];
@@ -460,7 +460,7 @@ export class BookSourceEngine {
       }
     });
 
-    const responseText = await response.text();
+    const responseText = await decodeResponseText(response);
     const chapters: Chapter[] = [];
 
     // Check if JSON TOC
@@ -562,7 +562,7 @@ export class BookSourceEngine {
       }
     });
 
-    const responseText = await response.text();
+    const responseText = await decodeResponseText(response);
 
     // Check if JSON Content
     let isJson = false;

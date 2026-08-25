@@ -229,7 +229,7 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
         )}
 
         {/* Drawer Tab Content */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%', overflow: 'hidden', padding: '4px 2px 2px 2px', borderRadius: '16px' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', padding: '4px 2px 2px 2px', borderRadius: '16px' }}>
           {activeTab === 'bookshelf' && (
             <BookshelfView
               books={books}

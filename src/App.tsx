@@ -92,7 +92,10 @@ export default function App() {
 
   // Sync to Storage on changes
   useEffect(() => {
-    StorageService.saveBooks(books);
+    const timer = setTimeout(() => {
+      StorageService.saveBooks(books);
+    }, 800);
+    return () => clearTimeout(timer);
   }, [books]);
 
   useEffect(() => {

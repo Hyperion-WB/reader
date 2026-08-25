@@ -21,7 +21,15 @@
     "core:window:allow-is-maximized",
     "opener:default",
     "global-shortcut:default",
-    "http:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "https://*/**" },
+        { "url": "http://*/**" },
+        { "url": "https://*" },
+        { "url": "http://*" }
+      ]
+    },
     "dialog:default",
     "fs:default"
   ]

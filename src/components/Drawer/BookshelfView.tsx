@@ -45,7 +45,7 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden', gap: '10px', padding: '2px 0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', gap: '10px', padding: '2px 0' }}>
       {/* Top Action Bar */}
       <div style={{ display: 'flex', gap: '8px', padding: '2px 0' }}>
         <button

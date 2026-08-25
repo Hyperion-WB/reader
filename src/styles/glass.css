@@ -458,7 +458,10 @@ body, html {
 }
 
 .animate-ios-spring {
-  animation: iosSpringIn 0.3s cubic-bezier(0.34, 1.36, 0.64, 1) forwards;
+  animation: iosSpringIn 0.28s cubic-bezier(0.34, 1.36, 0.64, 1) forwards;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 @keyframes hudFloatIn {
@@ -476,13 +479,16 @@ body, html {
 }
 
 .animate-hud-float {
-  animation: hudFloatIn 0.35s cubic-bezier(0.34, 1.36, 0.64, 1) forwards;
+  animation: hudFloatIn 0.32s cubic-bezier(0.34, 1.36, 0.64, 1) forwards;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 @keyframes chapterFadeIn {
   0% {
     opacity: 0.2;
-    transform: translateY(10px) scale(0.99);
+    transform: translateY(8px) scale(0.99);
   }
   100% {
     opacity: 1;
@@ -491,7 +497,10 @@ body, html {
 }
 
 .animate-chapter-fade {
-  animation: chapterFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: chapterFadeIn 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 /* Custom Sleek Scrollbar */

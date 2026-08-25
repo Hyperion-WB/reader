@@ -26,7 +26,11 @@ export const defaultThemeConfig: ThemeConfig = {
   textColor: '#e6e6ea',
   backgroundColor: 'rgba(18, 18, 22, 0.72)',
   glassBorder: true,
-  pageMode: 'scroll'
+  pageMode: 'scroll',
+  columns: 'auto',
+  pageTurnAnimation: 'slide',
+  comicFlowMode: 'stream',
+  comicFilter: 'normal'
 };
 
 export const defaultStealthConfig: StealthConfig = {

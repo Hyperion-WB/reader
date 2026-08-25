@@ -169,6 +169,49 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  // 1. One-Click Deduplicate Sources (removes duplicate names & URLs)
+  const handleDeduplicateSources = () => {
+    const seen = new Set<string>();
+    const deduplicated: BookSource[] = [];
+    let dupCount = 0;
+
+    sources.forEach((s) => {
+      const key = `${s.name.trim()}__${s.url.trim().replace(/\/+$/, '')}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduplicated.push(s);
+      } else {
+        dupCount++;
+      }
+    });
+
+    if (dupCount === 0) {
+      alert('✨ 当前书源列表非常整洁，未发现任何重复书源！');
+      return;
+    }
+
+    onUpdateSources(deduplicated);
+    alert(`🎉 成功自动清理合并了 ${dupCount} 个重复书源！当前剩余 ${deduplicated.length} 个书源。`);
+  };
+
+  // 2. One-Click Clean Timed-Out Sources
+  const handleCleanTimeoutSources = () => {
+    const timeoutIds = Object.keys(sourcePings).filter((id) => sourcePings[id] === 'timeout');
+    if (timeoutIds.length === 0) {
+      alert('提示：请先点击【测速】按钮进行连通性检测，再一键清理超时失效书源。');
+      return;
+    }
+
+    if (!window.confirm(`确定要批量清理 ${timeoutIds.length} 个测速超时的失效书源吗？`)) {
+      return;
+    }
+
+    const filtered = sources.filter((s) => !timeoutIds.includes(s.id));
+    onUpdateSources(filtered);
+    setSourcePings({});
+    alert(`🎉 已成功清理 ${timeoutIds.length} 个失效超时书源！`);
+  };
+
   const handlePingSources = async () => {
     setIsPinging(true);
     const enabledSources = sources.filter((s) => s.enabled);
@@ -279,6 +322,22 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
             title="全部折叠 / 全部展开"
           >
             折叠/展开
+          </button>
+          <button
+            onClick={handleDeduplicateSources}
+            className="frosted-btn"
+            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px' }}
+            title="自动检测并合并清理重复书源"
+          >
+            去重
+          </button>
+          <button
+            onClick={handleCleanTimeoutSources}
+            className="frosted-btn"
+            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px', color: '#f59e0b' }}
+            title="一键清理测速超时失效的书源"
+          >
+            清失效
           </button>
           <button
             onClick={handleEnableAll}

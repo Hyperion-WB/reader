@@ -11,7 +11,10 @@ import {
   HelpCircle,
   BookOpen,
   AlignJustify,
-  Bookmark
+  Bookmark,
+  Shuffle,
+  Columns,
+  DownloadCloud
 } from 'lucide-react';
 import { ThemeConfig } from '../types/reader';
 
@@ -33,6 +36,8 @@ interface HUDControlsProps {
   onToggleAutoScroll: () => void;
   onOpenShortcuts: () => void;
   onAddBookmark?: () => void;
+  onOpenSourceSwitcher?: () => void;
+  onBatchCache?: () => void;
 }
 
 export const HUDControls: React.FC<HUDControlsProps> = ({
@@ -51,7 +56,9 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
   isAutoScrolling,
   onToggleAutoScroll,
   onOpenShortcuts,
-  onAddBookmark
+  onAddBookmark,
+  onOpenSourceSwitcher,
+  onBatchCache
 }) => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -244,6 +251,53 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
             {themeConfig.pageMode === 'paginated' ? <BookOpen size={12} style={{ color: 'var(--accent-color)' }} /> : <AlignJustify size={12} style={{ color: 'var(--accent-color)' }} />}
             <span>{themeConfig.pageMode === 'paginated' ? '翻页' : '滚动'}</span>
           </button>
+
+          {/* Dual Column Toggle */}
+          <button
+            onClick={() =>
+              onUpdateTheme({
+                ...themeConfig,
+                columns: themeConfig.columns === 'double' ? 'single' : 'double'
+              })
+            }
+            className="frosted-btn"
+            style={{
+              padding: '4px 6px',
+              borderRadius: '9999px',
+              color: themeConfig.columns === 'double' ? 'var(--accent-color)' : 'var(--text-primary)',
+              flexShrink: 0
+            }}
+            data-tooltip={themeConfig.columns === 'double' ? '当前：双栏排版（点击切为单栏）' : '当前：单栏排版（点击切为双栏）'}
+            data-tooltip-pos="top"
+          >
+            <Columns size={13} />
+          </button>
+
+          {/* Quick Source Switcher Button */}
+          {onOpenSourceSwitcher && (
+            <button
+              onClick={onOpenSourceSwitcher}
+              className="frosted-btn"
+              style={{ padding: '4px 6px', borderRadius: '9999px', flexShrink: 0 }}
+              data-tooltip="一键无缝换源 (搜索全网同名小说并对齐当前章节)"
+              data-tooltip-pos="top"
+            >
+              <Shuffle size={13} style={{ color: 'var(--accent-color)' }} />
+            </button>
+          )}
+
+          {/* Batch Offline Cache Button */}
+          {onBatchCache && (
+            <button
+              onClick={onBatchCache}
+              className="frosted-btn"
+              style={{ padding: '4px 6px', borderRadius: '9999px', flexShrink: 0 }}
+              data-tooltip="全书离线一键批量缓存"
+              data-tooltip-pos="top"
+            >
+              <DownloadCloud size={13} />
+            </button>
+          )}
 
           {/* TTS Speech Trigger */}
           <button

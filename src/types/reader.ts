@@ -128,6 +128,10 @@ export interface ThemeConfig {
   backgroundColor: string;
   glassBorder: boolean;
   pageMode: 'paginated' | 'scroll';
+  columns?: 'single' | 'double' | 'auto';
+  pageTurnAnimation?: 'slide' | '3d-flip' | 'fade';
+  comicFlowMode?: 'stream' | 'rtl' | 'ltr';
+  comicFilter?: 'normal' | 'invert' | 'contrast';
 }
 
 export type ChameleonModeType =
@@ -164,4 +168,10 @@ export interface Bookmark {
   selectedText: string;
   note?: string;
   timestamp: number;
+}
+
+export interface ReadingDailyStat {
+  date: string; // YYYY-MM-DD
+  minutes: number;
+  wordCount: number;
 }

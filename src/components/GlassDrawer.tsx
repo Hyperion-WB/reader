@@ -7,6 +7,7 @@ import { OnlineSearchView } from './Drawer/OnlineSearchView';
 import { SourceManagerView } from './Drawer/SourceManagerView';
 import { StyleStudioView } from './Drawer/StyleStudioView';
 import { StealthConsoleView } from './Drawer/StealthConsoleView';
+import { ReadingHeatmapView } from './Drawer/ReadingHeatmapView';
 import { IOSSegmentedControl } from './IOSSegmentedControl';
 import {
   Library,
@@ -16,12 +17,13 @@ import {
   Globe,
   Palette,
   ShieldCheck,
+  Flame,
   HelpCircle,
   Keyboard,
   X
 } from 'lucide-react';
 
-export type DrawerTab = 'bookshelf' | 'toc' | 'bookmarks' | 'search' | 'sources' | 'style' | 'stealth';
+export type DrawerTab = 'bookshelf' | 'toc' | 'bookmarks' | 'search' | 'sources' | 'style' | 'stealth' | 'stats';
 
 interface GlassDrawerProps {
   isOpen: boolean;
@@ -87,7 +89,8 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
     { id: 'search', label: '搜书', icon: <Search size={13} /> },
     { id: 'sources', label: '书源', icon: <Globe size={13} /> },
     { id: 'style', label: '排版', icon: <Palette size={13} /> },
-    { id: 'stealth', label: '摸鱼', icon: <ShieldCheck size={13} /> }
+    { id: 'stealth', label: '摸鱼', icon: <ShieldCheck size={13} /> },
+    { id: 'stats', label: '打卡', icon: <Flame size={13} /> }
   ];
 
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 800);
@@ -123,7 +126,7 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
           marginTop: '68px',
           marginLeft: '14px',
           marginBottom: '14px',
-          width: '490px',
+          width: '520px',
           maxWidth: 'calc(100vw - 28px)',
           height: 'calc(100% - 82px)',
           display: 'flex',
@@ -146,11 +149,16 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
             <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)', letterSpacing: '-0.3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span>控制中心</span>
               <span style={{ fontSize: '11px', fontWeight: 400, color: 'var(--text-muted)' }}>
-                ({activeTab === 'bookshelf' ? '我的书架' : activeTab === 'toc' ? '书籍目录' : activeTab === 'bookmarks' ? '精彩书签' : activeTab === 'search' ? '聚合搜书' : activeTab === 'sources' ? '书源管理' : activeTab === 'style' ? '排版样式' : '摸鱼隐身'})
+                ({activeTab === 'bookshelf' ? '我的书架' : activeTab === 'toc' ? '书籍目录' : activeTab === 'bookmarks' ? '精彩书签' : activeTab === 'search' ? '聚合搜书' : activeTab === 'sources' ? '书源管理' : activeTab === 'style' ? '排版样式' : activeTab === 'stealth' ? '摸鱼隐身' : '打卡热力图'})
               </span>
             </div>
             {todayReadingMinutes !== undefined && todayReadingMinutes > 0 && (
-              <span style={{ fontSize: '10.5px', color: 'var(--accent-color)', background: 'rgba(56, 189, 248, 0.12)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 500 }}>
+              <span
+                onClick={() => setActiveTab('stats')}
+                style={{ fontSize: '10.5px', color: 'var(--accent-color)', background: 'rgba(56, 189, 248, 0.12)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 500, cursor: 'pointer' }}
+                data-tooltip="点击查看 365 天阅读打卡热力图"
+                data-tooltip-pos="bottom"
+              >
                 今日已读 {todayReadingMinutes} 分钟
               </span>
             )}
@@ -301,6 +309,12 @@ export const GlassDrawer: React.FC<GlassDrawerProps> = ({
                 onChangeChameleonMode?.(mode);
                 onClose();
               }}
+            />
+          )}
+
+          {activeTab === 'stats' && (
+            <ReadingHeatmapView
+              todayReadingMinutes={todayReadingMinutes || 0}
             />
           )}
         </div>

@@ -6,7 +6,8 @@ import { TTSBar } from './TTSBar';
 import { TTSService } from '../services/ttsService';
 import { ShortcutsModal } from './ShortcutsModal';
 import { ChapterSearchBar } from './ChapterSearchBar';
-import { Loader2, BookmarkPlus, Pause, Bookmark as BookmarkIcon } from 'lucide-react';
+import { SourceSwitcherModal } from './SourceSwitcherModal';
+import { Loader2, BookmarkPlus, Pause, Bookmark as BookmarkIcon, DownloadCloud, Image as ImageIcon } from 'lucide-react';
 
 interface MainReaderProps {
   book: Book;
@@ -18,6 +19,7 @@ interface MainReaderProps {
   onNextChapter: () => void;
   onPrevChapter: () => void;
   onJumpChapter: (index: number) => void;
+  onSwitchBookSource?: (updatedBook: Book) => void;
 }
 
 export const MainReader: React.FC<MainReaderProps> = ({
@@ -29,7 +31,8 @@ export const MainReader: React.FC<MainReaderProps> = ({
   onAddBookmark,
   onNextChapter,
   onPrevChapter,
-  onJumpChapter
+  onJumpChapter,
+  onSwitchBookSource
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showHUD, setShowHUD] = useState(false);
@@ -38,6 +41,8 @@ export const MainReader: React.FC<MainReaderProps> = ({
   const [selectedText, setSelectedText] = useState<string>('');
   const [selectionPos, setSelectionPos] = useState<{ x: number; y: number } | null>(null);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [showSourceSwitcher, setShowSourceSwitcher] = useState(false);
+  const [showBatchCacheModal, setShowBatchCacheModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // In-Chapter Keyword Search
@@ -542,14 +547,96 @@ export const MainReader: React.FC<MainReaderProps> = ({
           {currentChapter.title}
         </div>
 
-        {/* Comic / Manga Rendering Canvas or Text Paragraphs */}
+        {/* Comic / Manga Rendering Canvas with Flow & Filter Controls */}
         {(book.isComic || currentChapter.isComic || (currentChapter.comicImages && currentChapter.comicImages.length > 0)) ? (
-          <div className="animate-chapter-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', maxWidth: '900px', margin: '0 auto' }}>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>高清漫画画卷 (共 {currentChapter.comicImages?.length || 0} 页)</span>
-              <span>·</span>
-              <span>支持平滑自动滚屏</span>
+          <div className="animate-chapter-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', maxWidth: '960px', margin: '0 auto' }}>
+            {/* Floating Comic Quick Controls Toolbar */}
+            <div
+              className="frosted-menu-solid"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '4px 10px',
+                borderRadius: '9999px',
+                fontSize: '11px',
+                color: 'var(--text-secondary)',
+                marginBottom: '4px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <ImageIcon size={12} color="var(--accent-color)" />
+                <span>画卷 ({currentChapter.comicImages?.length || 0}P)</span>
+              </div>
+              <div style={{ width: '1px', height: '12px', background: 'var(--glass-border)' }} />
+              {/* Flow Mode Switcher */}
+              <div style={{ display: 'flex', gap: '3px' }}>
+                <button
+                  onClick={() => onUpdateTheme({ ...themeConfig, comicFlowMode: 'stream' })}
+                  className="frosted-btn"
+                  style={{
+                    padding: '2px 6px',
+                    fontSize: '10px',
+                    borderRadius: '6px',
+                    background: (themeConfig.comicFlowMode || 'stream') === 'stream' ? 'var(--accent-color)' : 'transparent',
+                    color: (themeConfig.comicFlowMode || 'stream') === 'stream' ? '#fff' : 'inherit'
+                  }}
+                >
+                  条漫瀑布
+                </button>
+                <button
+                  onClick={() => onUpdateTheme({ ...themeConfig, comicFlowMode: 'rtl' })}
+                  className="frosted-btn"
+                  style={{
+                    padding: '2px 6px',
+                    fontSize: '10px',
+                    borderRadius: '6px',
+                    background: themeConfig.comicFlowMode === 'rtl' ? 'var(--accent-color)' : 'transparent',
+                    color: themeConfig.comicFlowMode === 'rtl' ? '#fff' : 'inherit'
+                  }}
+                  data-tooltip="日漫翻页习惯 (从右往左)"
+                  data-tooltip-pos="top"
+                >
+                  日漫 RTL
+                </button>
+              </div>
+              <div style={{ width: '1px', height: '12px', background: 'var(--glass-border)' }} />
+              {/* Filter Switcher */}
+              <div style={{ display: 'flex', gap: '3px' }}>
+                <button
+                  onClick={() => onUpdateTheme({ ...themeConfig, comicFilter: themeConfig.comicFilter === 'invert' ? 'normal' : 'invert' })}
+                  className="frosted-btn"
+                  style={{
+                    padding: '2px 6px',
+                    fontSize: '10px',
+                    borderRadius: '6px',
+                    background: themeConfig.comicFilter === 'invert' ? 'var(--accent-color)' : 'transparent',
+                    color: themeConfig.comicFilter === 'invert' ? '#fff' : 'inherit'
+                  }}
+                  data-tooltip="夜间黑白反转 (夜读不刺眼)"
+                  data-tooltip-pos="top"
+                >
+                  夜间反色
+                </button>
+                <button
+                  onClick={() => onUpdateTheme({ ...themeConfig, comicFilter: themeConfig.comicFilter === 'contrast' ? 'normal' : 'contrast' })}
+                  className="frosted-btn"
+                  style={{
+                    padding: '2px 6px',
+                    fontSize: '10px',
+                    borderRadius: '6px',
+                    background: themeConfig.comicFilter === 'contrast' ? 'var(--accent-color)' : 'transparent',
+                    color: themeConfig.comicFilter === 'contrast' ? '#fff' : 'inherit'
+                  }}
+                  data-tooltip="高清对比度增强"
+                  data-tooltip-pos="top"
+                >
+                  清晰增强
+                </button>
+              </div>
             </div>
+
+            {/* Comic Images List */}
             {currentChapter.comicImages?.map((imgSrc, imgIdx) => (
               <div
                 key={imgIdx}
@@ -560,7 +647,14 @@ export const MainReader: React.FC<MainReaderProps> = ({
                   borderRadius: '12px',
                   overflow: 'hidden',
                   boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
-                  background: 'rgba(0,0,0,0.2)'
+                  background: 'rgba(0,0,0,0.2)',
+                  filter:
+                    themeConfig.comicFilter === 'invert'
+                      ? 'invert(0.92) hue-rotate(180deg) contrast(1.1)'
+                      : themeConfig.comicFilter === 'contrast'
+                      ? 'contrast(1.25) brightness(1.05)'
+                      : 'none',
+                  transition: 'filter 0.3s ease'
                 }}
               >
                 <img
@@ -593,8 +687,8 @@ export const MainReader: React.FC<MainReaderProps> = ({
             <div style={{ fontSize: '13px' }}>正在为您加载章节内容...</div>
           </div>
         ) : themeConfig.pageMode === 'paginated' ? (
-          /* 2. Paginated Flip View Mode */
-          <div key={`page-${book.currentChapterIndex}-${currentPage}`} className="animate-chapter-fade" style={{ maxWidth: '860px', margin: '0 auto', minHeight: 'calc(100% - 80px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
+          /* 2. Paginated Flip View Mode with 3D and Dual Column support */
+          <div key={`page-${book.currentChapterIndex}-${currentPage}`} className="animate-chapter-fade" style={{ maxWidth: themeConfig.columns === 'double' ? '1200px' : '860px', margin: '0 auto', minHeight: 'calc(100% - 80px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
             {/* Clickable Paging Hotspots for Left/Right halves */}
             <div
               onClick={handlePrevPage}
@@ -915,6 +1009,8 @@ export const MainReader: React.FC<MainReaderProps> = ({
         onToggleAutoScroll={() => setIsAutoScrolling((prev) => !prev)}
         onOpenShortcuts={() => setShowShortcutsModal(true)}
         onAddBookmark={handleQuickAddBookmark}
+        onOpenSourceSwitcher={() => setShowSourceSwitcher(true)}
+        onBatchCache={() => setShowBatchCacheModal(true)}
       />
 
       {/* Floating Toast Notification Pill */}
@@ -948,6 +1044,170 @@ export const MainReader: React.FC<MainReaderProps> = ({
         isOpen={showShortcutsModal}
         onClose={() => setShowShortcutsModal(false)}
       />
+
+      {/* Seamless Source Switcher Modal */}
+      <SourceSwitcherModal
+        isOpen={showSourceSwitcher}
+        onClose={() => setShowSourceSwitcher(false)}
+        currentBook={book}
+        sources={sources}
+        onSwitchBookSource={(newBook) => {
+          onSwitchBookSource?.(newBook);
+          setToastMessage(`🎉 已无缝切换至书源【${newBook.sourceName}】！`);
+        }}
+      />
+
+      {/* Batch Offline Cache Modal */}
+      {showBatchCacheModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 999999,
+            background: 'rgba(0, 0, 0, 0.45)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setShowBatchCacheModal(false)}
+        >
+          <div
+            className="frosted-panel animate-ios-spring"
+            style={{
+              width: '420px',
+              maxWidth: '92vw',
+              borderRadius: '20px',
+              padding: '18px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.55)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ padding: '6px', background: 'var(--accent-color)', borderRadius: '10px', color: '#fff', display: 'flex' }}>
+                <DownloadCloud size={16} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)' }}>全书离线一键批量缓存</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>下载正文到本地，无网断网环境下随时畅读</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button
+                onClick={async () => {
+                  setShowBatchCacheModal(false);
+                  if (!book.isOnlineSource) {
+                    setToastMessage('本地书籍无需缓存');
+                    return;
+                  }
+                  const startIdx = book.currentChapterIndex;
+                  const targets = book.chapters.slice(startIdx, startIdx + 50).filter((c) => !c.content && c.url);
+                  if (targets.length === 0) {
+                    setToastMessage('后 50 章已全部缓存！');
+                    return;
+                  }
+                  const source = sources.find((s) => s.id === book.sourceId) || { id: book.sourceId, name: book.sourceName, url: book.sourceUrl || '', enabled: true };
+                  const engine = new BookSourceEngine(sources);
+                  setToastMessage(`正在缓存后 50 章 (${targets.length} 篇待下)...`);
+                  let done = 0;
+                  for (const ch of targets) {
+                    if (ch.url) {
+                      try {
+                        ch.content = await engine.fetchChapterContent(ch.url, source);
+                        done++;
+                        setToastMessage(`正在缓存: ${done}/${targets.length} (${Math.round((done / targets.length) * 100)}%)`);
+                      } catch {}
+                    }
+                  }
+                  setToastMessage(`🎉 成功缓存 ${done} 个章节！`);
+                }}
+                className="frosted-btn frosted-btn-primary"
+                style={{ padding: '8px 12px', borderRadius: '12px', fontSize: '12.5px', justifyContent: 'flex-start' }}
+              >
+                <DownloadCloud size={14} />
+                <span>缓存后 50 章 (推荐)</span>
+              </button>
+
+              <button
+                onClick={async () => {
+                  setShowBatchCacheModal(false);
+                  if (!book.isOnlineSource) {
+                    setToastMessage('本地书籍无需缓存');
+                    return;
+                  }
+                  const startIdx = book.currentChapterIndex;
+                  const targets = book.chapters.slice(startIdx, startIdx + 200).filter((c) => !c.content && c.url);
+                  if (targets.length === 0) {
+                    setToastMessage('所选章节已全部缓存！');
+                    return;
+                  }
+                  const source = sources.find((s) => s.id === book.sourceId) || { id: book.sourceId, name: book.sourceName, url: book.sourceUrl || '', enabled: true };
+                  const engine = new BookSourceEngine(sources);
+                  setToastMessage(`正在缓存后 200 章 (${targets.length} 篇待下)...`);
+                  let done = 0;
+                  for (const ch of targets) {
+                    if (ch.url) {
+                      try {
+                        ch.content = await engine.fetchChapterContent(ch.url, source);
+                        done++;
+                        setToastMessage(`正在缓存: ${done}/${targets.length} (${Math.round((done / targets.length) * 100)}%)`);
+                      } catch {}
+                    }
+                  }
+                  setToastMessage(`🎉 成功缓存 ${done} 个章节！`);
+                }}
+                className="frosted-btn"
+                style={{ padding: '8px 12px', borderRadius: '12px', fontSize: '12.5px', justifyContent: 'flex-start' }}
+              >
+                <DownloadCloud size={14} />
+                <span>缓存后 200 章</span>
+              </button>
+
+              <button
+                onClick={async () => {
+                  setShowBatchCacheModal(false);
+                  if (!book.isOnlineSource) {
+                    setToastMessage('本地书籍无需缓存');
+                    return;
+                  }
+                  const targets = book.chapters.filter((c) => !c.content && c.url);
+                  if (targets.length === 0) {
+                    setToastMessage('全本章节已全部完成离线缓存！');
+                    return;
+                  }
+                  const source = sources.find((s) => s.id === book.sourceId) || { id: book.sourceId, name: book.sourceName, url: book.sourceUrl || '', enabled: true };
+                  const engine = new BookSourceEngine(sources);
+                  setToastMessage(`开始缓存全本 (${targets.length} 章节)...`);
+                  let done = 0;
+                  for (const ch of targets) {
+                    if (ch.url) {
+                      try {
+                        ch.content = await engine.fetchChapterContent(ch.url, source);
+                        done++;
+                        if (done % 5 === 0 || done === targets.length) {
+                          setToastMessage(`全本缓存中: ${done}/${targets.length} (${Math.round((done / targets.length) * 100)}%)`);
+                        }
+                      } catch {}
+                    }
+                  }
+                  setToastMessage(`🎉 全本离线缓存完成！共下载 ${done} 个章节。`);
+                }}
+                className="frosted-btn"
+                style={{ padding: '8px 12px', borderRadius: '12px', fontSize: '12.5px', justifyContent: 'flex-start' }}
+              >
+                <DownloadCloud size={14} />
+                <span>缓存全本全部章节 ({book.chapters.length} 章)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

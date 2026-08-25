@@ -245,6 +245,29 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
             <span>左右翻页</span>
           </button>
         </div>
+
+        {/* Dual-Column Selector */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '4px', borderTop: '1px solid var(--glass-border)', marginTop: '2px' }}>
+          <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>宽屏分栏排版</span>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {(['single', 'double', 'auto'] as const).map((col) => (
+              <button
+                key={col}
+                onClick={() => onUpdateTheme({ ...themeConfig, columns: col })}
+                className="frosted-btn"
+                style={{
+                  padding: '2px 8px',
+                  fontSize: '10.5px',
+                  borderRadius: '6px',
+                  background: (themeConfig.columns || 'auto') === col ? 'var(--accent-color)' : 'transparent',
+                  color: (themeConfig.columns || 'auto') === col ? '#fff' : 'inherit'
+                }}
+              >
+                {col === 'single' ? '单栏' : col === 'double' ? '双栏' : '自动'}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* 1. Theme Presets */}

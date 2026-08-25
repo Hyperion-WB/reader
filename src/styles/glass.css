@@ -278,11 +278,30 @@ body, html {
 }
 
 .reader-scroll-viewport {
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: scroll-position;
   contain: paint layout;
   overscroll-behavior: contain;
+}
+
+/* 3D Book Page Flip Effect & Spine Shadow */
+.page-flip-3d {
+  perspective: 1400px;
+  transform-style: preserve-3d;
+}
+
+.page-flip-content {
+  animation: pageTurn3D 0.38s cubic-bezier(0.25, 1, 0.5, 1);
+  transform-origin: left center;
+}
+
+@keyframes pageTurn3D {
+  0% {
+    opacity: 0.6;
+    transform: rotateY(-18deg) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateY(0deg) scale(1);
+  }
 }
 
 /* iOS Dynamic Island Floating Capsule Bar */

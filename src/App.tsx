@@ -629,6 +629,9 @@ export default function App() {
             themeConfig={themeConfig}
             onUpdateTheme={setThemeConfig}
             onAddBookmark={(bm) => setBookmarks((prev) => [bm, ...prev])}
+            onSwitchBookSource={(newBook) => {
+              setBooks((prev) => prev.map((b) => (b.id === newBook.id ? newBook : b)));
+            }}
           />
         ) : (
           <div

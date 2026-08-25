@@ -208,25 +208,38 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
                     if (!isActive) e.currentTarget.style.background = 'var(--glass-surface)';
                   }}
                 >
-                  {/* Mini Cover Badge */}
+                  {/* Mini Cover Badge with referrerPolicy and gradient fallback */}
                   <div
                     style={{
                       width: '28px',
                       height: '36px',
-                      borderRadius: '5px',
-                      background: book.cover
-                        ? `url(${book.cover}) center/cover`
-                        : 'linear-gradient(135deg, #334155 0%, #1e293b 100%)',
+                      borderRadius: '6px',
+                      overflow: 'hidden',
+                      position: 'relative',
+                      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.7) 0%, rgba(139, 92, 246, 0.7) 100%)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       color: '#ffffff',
                       fontWeight: 700,
-                      fontSize: '12px',
-                      flexShrink: 0
+                      fontSize: '11px',
+                      flexShrink: 0,
+                      border: '1px solid var(--glass-border)'
                     }}
                   >
-                    {!book.cover && book.title.slice(0, 1)}
+                    {book.cover && (
+                      <img
+                        src={book.cover}
+                        alt={book.title}
+                        referrerPolicy="no-referrer"
+                        loading="lazy"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                        }}
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 1 }}
+                      />
+                    )}
+                    <span style={{ zIndex: 0 }}>{book.title.slice(0, 1)}</span>
                   </div>
 
                   {/* Title & Author */}
@@ -368,26 +381,41 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
                   if (!isActive) e.currentTarget.style.background = 'var(--glass-surface)';
                 }}
               >
-                {/* Book Cover */}
+                {/* Book Cover with no-referrer bypass and gradient fallback */}
                 <div
                   style={{
-                    width: '54px',
-                    height: '72px',
-                    borderRadius: '8px',
-                    background: book.cover
-                      ? `url(${book.cover}) center/cover`
-                      : 'linear-gradient(135deg, #334155 0%, #1e293b 100%)',
+                    width: '56px',
+                    height: '76px',
+                    borderRadius: '10px',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(139, 92, 246, 0.8) 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: '#ffffff',
                     fontWeight: 700,
-                    fontSize: '16px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                    flexShrink: 0
+                    fontSize: '13px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                    flexShrink: 0,
+                    border: '1px solid var(--glass-border)'
                   }}
                 >
-                  {!book.cover && book.title.slice(0, 1)}
+                  {book.cover && (
+                    <img
+                      src={book.cover}
+                      alt={book.title}
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                      }}
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 1 }}
+                    />
+                  )}
+                  <span style={{ zIndex: 0, textAlign: 'center', padding: '4px', lineHeight: 1.2, wordBreak: 'break-all' }}>
+                    {book.title.slice(0, 4)}
+                  </span>
                 </div>
 
                 {/* Details */}

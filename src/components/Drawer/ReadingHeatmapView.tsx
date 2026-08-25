@@ -111,7 +111,7 @@ export const ReadingHeatmapView: React.FC<ReadingHeatmapViewProps> = ({ todayRea
   const estimatedWords = (heatmapData.totalMinutesAllTime * 400).toLocaleString();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: 'auto', gap: '12px', padding: '2px' }} className="smooth-scroll">
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100%', maxHeight: '100%', minHeight: 0, overflowY: 'auto', gap: '12px', padding: '2px 2px 36px 2px', boxSizing: 'border-box' }} className="smooth-scroll tauri-no-drag">
       {/* Top 4 KPI Metrics */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
         <div

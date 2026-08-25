@@ -252,25 +252,34 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
             <span>{themeConfig.pageMode === 'paginated' ? '翻页' : '滚动'}</span>
           </button>
 
-          {/* Dual Column Toggle */}
+          {/* Dual / Auto Column Toggle */}
           <button
             onClick={() =>
               onUpdateTheme({
                 ...themeConfig,
-                columns: themeConfig.columns === 'double' ? 'single' : 'double'
+                columns: themeConfig.columns === 'double' ? 'single' : themeConfig.columns === 'single' ? 'auto' : 'double'
               })
             }
             className="frosted-btn"
             style={{
-              padding: '4px 6px',
+              padding: '3px 7px',
               borderRadius: '9999px',
               color: themeConfig.columns === 'double' ? 'var(--accent-color)' : 'var(--text-primary)',
-              flexShrink: 0
+              flexShrink: 0,
+              gap: '3px',
+              fontSize: '11px'
             }}
-            data-tooltip={themeConfig.columns === 'double' ? '当前：双栏排版（点击切为单栏）' : '当前：单栏排版（点击切为双栏）'}
+            data-tooltip={
+              themeConfig.columns === 'double'
+                ? '当前：强制双栏（点击切为单栏）'
+                : themeConfig.columns === 'single'
+                ? '当前：单栏排版（点击切为宽屏自动）'
+                : '当前：宽屏自适应（点击切为双栏）'
+            }
             data-tooltip-pos="top"
           >
-            <Columns size={13} />
+            <Columns size={12} />
+            <span>{themeConfig.columns === 'double' ? '双栏' : themeConfig.columns === 'single' ? '单栏' : '自适应'}</span>
           </button>
 
           {/* Quick Source Switcher Button */}

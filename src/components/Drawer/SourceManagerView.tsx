@@ -249,9 +249,9 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', gap: '10px' }}>
+    <div className="tauri-no-drag" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden', gap: '8px' }}>
       {/* Search & Import Header */}
-      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
         <div style={{ position: 'relative', flex: 1 }}>
           <Search
             size={13}
@@ -269,133 +269,143 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="frosted-input"
-            style={{ paddingLeft: '30px', padding: '6px 10px 6px 30px', fontSize: '12px', borderRadius: '9999px' }}
+            style={{ paddingLeft: '30px', padding: '6px 10px 6px 30px', fontSize: '12px', borderRadius: '9999px', width: '100%', boxSizing: 'border-box' }}
           />
         </div>
 
         <button
           onClick={() => setImportModalOpen(true)}
           className="frosted-btn frosted-btn-primary"
-          style={{ padding: '6px 12px', borderRadius: '9999px', fontSize: '12px', flexShrink: 0 }}
+          style={{ padding: '6px 12px', borderRadius: '9999px', fontSize: '12px', flexShrink: 0, whiteSpace: 'nowrap' }}
         >
           <Plus size={13} />
           <span>导入书源</span>
         </button>
       </div>
 
-      {/* Batch Control Toolbar */}
+      {/* Batch Control Toolbar (Clean 2-Row Layout, No Line Wrapping) */}
       <div
+        className="frosted-card"
         style={{
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '4px 6px',
-          background: 'var(--glass-surface)',
-          borderRadius: '10px',
-          border: '1px solid var(--glass-border)',
-          fontSize: '11px',
-          color: 'var(--text-secondary)'
+          flexDirection: 'column',
+          gap: '6px',
+          padding: '8px 10px',
+          borderRadius: '12px',
+          flexShrink: 0
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Layers size={13} color="var(--accent-color)" />
-          <span>
-            共 <strong>{sources.length}</strong> 个书源 (已启用 <strong>{totalEnabled}</strong> 个)
-          </span>
+        {/* Row 1: Source Count & Health/Clean Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+            <Layers size={13} color="var(--accent-color)" />
+            <span>
+              共 <strong>{sources.length}</strong> 个书源 (已启用 <strong>{totalEnabled}</strong>)
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+            <button
+              onClick={handlePingSources}
+              disabled={isPinging}
+              className="frosted-btn"
+              style={{ padding: '3px 8px', fontSize: '11px', borderRadius: '6px', color: 'var(--accent-color)', whiteSpace: 'nowrap' }}
+              title="一键测试已启用书源连通性与网络延迟"
+            >
+              {isPinging ? <Loader2 size={11} className="animate-spin" /> : <Activity size={11} />}
+              <span>{isPinging ? '测速中' : '测速'}</span>
+            </button>
+            <button
+              onClick={handleDeduplicateSources}
+              className="frosted-btn"
+              style={{ padding: '3px 8px', fontSize: '11px', borderRadius: '6px', whiteSpace: 'nowrap' }}
+              title="自动检测并合并清理重复书源"
+            >
+              去重
+            </button>
+            <button
+              onClick={handleCleanTimeoutSources}
+              className="frosted-btn"
+              style={{ padding: '3px 8px', fontSize: '11px', borderRadius: '6px', color: '#f59e0b', whiteSpace: 'nowrap' }}
+              title="一键清理测速超时失效的书源"
+            >
+              清理失效
+            </button>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '4px' }}>
-          <button
-            onClick={handlePingSources}
-            disabled={isPinging}
-            className="frosted-btn"
-            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px', color: 'var(--accent-color)' }}
-            title="一键测试已启用书源连通性与网络延迟"
-          >
-            {isPinging ? <Loader2 size={11} className="animate-spin" /> : <Activity size={11} />}
-            <span>{isPinging ? '测速中' : '测速'}</span>
-          </button>
-          <button
-            onClick={handleToggleExpandAll}
-            className="frosted-btn"
-            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px' }}
-            title="全部折叠 / 全部展开"
-          >
-            折叠/展开
-          </button>
-          <button
-            onClick={handleDeduplicateSources}
-            className="frosted-btn"
-            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px' }}
-            title="自动检测并合并清理重复书源"
-          >
-            去重
-          </button>
-          <button
-            onClick={handleCleanTimeoutSources}
-            className="frosted-btn"
-            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px', color: '#f59e0b' }}
-            title="一键清理测速超时失效的书源"
-          >
-            清失效
-          </button>
-          <button
-            onClick={handleEnableAll}
-            className="frosted-btn"
-            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px' }}
-            title="全选启用全部书源"
-          >
-            全启用
-          </button>
-          <button
-            onClick={handleDisableAll}
-            className="frosted-btn"
-            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px' }}
-            title="全选禁用全部书源"
-          >
-            全禁用
-          </button>
-          <button
-            onClick={handleExportJson}
-            className="frosted-btn"
-            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px' }}
-            title="导出 JSON 备份"
-          >
-            <Download size={11} />
-          </button>
-          <button
-            onClick={handleRestoreDefaults}
-            className="frosted-btn"
-            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px' }}
-            data-tooltip="恢复内置默认书源"
-            data-tooltip-pos="bottom"
-          >
-            <RotateCcw size={11} />
-          </button>
-          <button
-            onClick={handleClearAllSources}
-            className="frosted-btn"
-            style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px', color: '#ef4444' }}
-            data-tooltip="一键清空全部书源"
-            data-tooltip-pos="bottom"
-          >
-            <Trash2 size={11} />
-          </button>
+        {/* Row 2: Bulk Select & Library Management */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '4px', borderTop: '1px solid var(--glass-border)' }}>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+            <button
+              onClick={handleToggleExpandAll}
+              className="frosted-btn"
+              style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px', whiteSpace: 'nowrap' }}
+              title="全部折叠 / 全部展开"
+            >
+              全部折叠/展开
+            </button>
+            <button
+              onClick={handleEnableAll}
+              className="frosted-btn"
+              style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px', whiteSpace: 'nowrap' }}
+              title="全选启用全部书源"
+            >
+              全启用
+            </button>
+            <button
+              onClick={handleDisableAll}
+              className="frosted-btn"
+              style={{ padding: '2px 6px', fontSize: '10.5px', borderRadius: '6px', whiteSpace: 'nowrap' }}
+              title="全选禁用全部书源"
+            >
+              全禁用
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+            <button
+              onClick={handleExportJson}
+              className="frosted-btn"
+              style={{ padding: '3px 6px', fontSize: '10.5px', borderRadius: '6px' }}
+              title="导出 JSON 备份"
+            >
+              <Download size={11} />
+            </button>
+            <button
+              onClick={handleRestoreDefaults}
+              className="frosted-btn"
+              style={{ padding: '3px 6px', fontSize: '10.5px', borderRadius: '6px' }}
+              title="恢复内置默认书源"
+            >
+              <RotateCcw size={11} />
+            </button>
+            <button
+              onClick={handleClearAllSources}
+              className="frosted-btn"
+              style={{ padding: '3px 6px', fontSize: '10.5px', borderRadius: '6px', color: '#ef4444' }}
+              title="一键清空全部书源"
+            >
+              <Trash2 size={11} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Grouped Book Sources Scroll Container (Zero Lag, Smooth Scrolling) */}
+      {/* Grouped Book Sources Scroll Container (Guaranteed Scrollable on Windows) */}
       <div
-        className="smooth-scroll"
+        className="smooth-scroll tauri-no-drag"
         style={{
           flex: 1,
+          height: '100%',
           minHeight: 0,
+          maxHeight: '100%',
           overflowY: 'auto',
           overflowX: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           gap: '8px',
-          padding: '2px 2px 48px 2px',
+          padding: '2px 2px 36px 2px',
           boxSizing: 'border-box'
         }}
       >

@@ -213,9 +213,11 @@ export const TocView: React.FC<TocViewProps> = ({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="smooth-scroll"
+        className="smooth-scroll tauri-no-drag"
         style={{
           flex: 1,
+          height: '100%',
+          maxHeight: '100%',
           minHeight: 0,
           overflowY: 'auto',
           overflowX: 'hidden',

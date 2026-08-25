@@ -1,5 +1,6 @@
 import { BookSource, Chapter, SearchResultItem } from '../types/reader';
 import { universalFetch, decodeResponseText } from './tauriBridge';
+import { DEFAULT_BOOK_SOURCES } from './defaultSources';
 
 export class BookSourceEngine {
   private sources: BookSource[] = [];
@@ -20,19 +21,21 @@ export class BookSourceEngine {
   // Resolve relative URLs accurately
   public static resolveUrl(relativeUrl: string, baseUrl: string): string {
     if (!relativeUrl) return baseUrl;
+    const cleanRel = relativeUrl.trim();
+    if (cleanRel.startsWith('//')) {
+      return `https:${cleanRel}`;
+    }
+    if (cleanRel.startsWith('http://') || cleanRel.startsWith('https://')) {
+      return cleanRel;
+    }
     try {
-      if (relativeUrl.startsWith('http://') || relativeUrl.startsWith('https://')) {
-        return relativeUrl;
-      }
-      if (!baseUrl) return relativeUrl;
-      const base = new URL(baseUrl);
-      return new URL(relativeUrl, base.origin + (base.pathname.endsWith('/') ? base.pathname : '/')).href;
+      return new URL(cleanRel, baseUrl).href;
     } catch {
-      if (relativeUrl.startsWith('/')) {
+      if (cleanRel.startsWith('/')) {
         const match = baseUrl.match(/^(https?:\/\/[^\/]+)/i);
-        return match ? `${match[1]}${relativeUrl}` : relativeUrl;
+        return match ? `${match[1]}${cleanRel}` : cleanRel;
       }
-      return `${baseUrl.replace(/\/+$/, '')}/${relativeUrl.replace(/^\/+/, '')}`;
+      return `${baseUrl.replace(/\/+$/, '')}/${cleanRel.replace(/^\/+/, '')}`;
     }
   }
 
@@ -66,6 +69,9 @@ export class BookSourceEngine {
           targetEl.getAttribute('src') ||
           targetEl.getAttribute('data-src') ||
           targetEl.getAttribute('data-original') ||
+          targetEl.getAttribute('data-echo') ||
+          targetEl.getAttribute('data-lazy-src') ||
+          targetEl.getAttribute('data-cfsrc') ||
           (targetEl as HTMLImageElement).src ||
           ''
         );
@@ -166,11 +172,20 @@ export class BookSourceEngine {
     const cleanKeyword = keyword.trim();
     if (!cleanKeyword) return [];
 
-    const enabledSources = this.sources.filter((s) => s.enabled && s.rule?.searchUrl);
+    const userEnabled = this.sources.filter((s) => s.enabled && s.rule?.searchUrl);
+    const combinedSourcesMap = new Map<string, BookSource>();
+    userEnabled.forEach((s) => combinedSourcesMap.set(s.url || s.id, s));
+    DEFAULT_BOOK_SOURCES.forEach((s) => {
+      if (!combinedSourcesMap.has(s.url || s.id)) {
+        combinedSourcesMap.set(s.url || s.id, s);
+      }
+    });
+    const candidateSources = Array.from(combinedSourcesMap.values());
+
     const aggregatedResults: SearchResultItem[] = [];
     const seenTitles = new Set<string>();
 
-    const searchPromises = enabledSources.map(async (source) => {
+    const searchPromises = candidateSources.map(async (source) => {
       try {
         let rawSearchRule = source.rule?.searchUrl || '';
         if (!rawSearchRule) return;

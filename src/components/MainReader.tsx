@@ -190,8 +190,19 @@ export const MainReader: React.FC<MainReaderProps> = ({
 
   const wordCount = currentChapterContent ? currentChapterContent.replace(/\s+/g, '').length : 0;
 
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isDoubleCol = themeConfig.columns === 'double' || (themeConfig.columns === 'auto' && windowWidth >= 1024);
+
   // Pagination Engine for Paginated Mode
-  const charsPerPage = Math.max(250, Math.floor(650 * (16 / Math.max(12, themeConfig.fontSize))));
+  const baseChars = Math.max(280, Math.floor(680 * (16 / Math.max(12, themeConfig.fontSize))));
+  const charsPerPage = isDoubleCol ? baseChars * 2 : baseChars;
 
   const pages: string[][] = React.useMemo(() => {
     if (paragraphs.length === 0) return [['(本章暂无内容)']];
@@ -216,6 +227,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
   }, [paragraphs, charsPerPage]);
 
   const [currentPage, setCurrentPage] = useState<number>(0);
+  const [pageTurnDir, setPageTurnDir] = useState<'next' | 'prev' | null>(null);
 
   // Clamp current page on content changes
   useEffect(() => {
@@ -227,9 +239,11 @@ export const MainReader: React.FC<MainReaderProps> = ({
   // Reset page to 0 when switching chapters
   useEffect(() => {
     setCurrentPage(0);
+    setPageTurnDir(null);
   }, [book.currentChapterIndex]);
 
   const handleNextPage = useCallback(() => {
+    setPageTurnDir('next');
     if (currentPage < pages.length - 1) {
       const nextP = currentPage + 1;
       setCurrentPage(nextP);
@@ -243,6 +257,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
   }, [currentPage, pages.length, book.currentChapterIndex, book.chapters.length, onNextChapter, onUpdateBookProgress]);
 
   const handlePrevPage = useCallback(() => {
+    setPageTurnDir('prev');
     if (currentPage > 0) {
       const prevP = currentPage - 1;
       setCurrentPage(prevP);
@@ -687,22 +702,48 @@ export const MainReader: React.FC<MainReaderProps> = ({
             <div style={{ fontSize: '13px' }}>正在为您加载章节内容...</div>
           </div>
         ) : themeConfig.pageMode === 'paginated' ? (
-          /* 2. Paginated Flip View Mode with 3D and Dual Column support */
-          <div key={`page-${book.currentChapterIndex}-${currentPage}`} className="animate-chapter-fade" style={{ maxWidth: themeConfig.columns === 'double' ? '1200px' : '860px', margin: '0 auto', minHeight: 'calc(100% - 80px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
-            {/* Clickable Paging Hotspots for Left/Right halves */}
+          /* 2. Paginated Flip View Mode with Real Turn Animation and Dual Column support */
+          <div
+            key={`page-${book.currentChapterIndex}-${currentPage}`}
+            className={pageTurnDir === 'next' ? 'page-anim-next' : pageTurnDir === 'prev' ? 'page-anim-prev' : 'animate-chapter-fade'}
+            style={{
+              maxWidth: isDoubleCol ? '1240px' : '860px',
+              width: '100%',
+              margin: '0 auto',
+              minHeight: 'calc(100% - 60px)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              position: 'relative'
+            }}
+          >
+            {/* Clickable Paging Hotspots: Left 28% (Prev), Center 44% (Toggle HUD), Right 28% (Next) */}
             <div
               onClick={handlePrevPage}
               data-tooltip="上一页 (A / ←)"
               data-tooltip-pos="right"
               style={{
                 position: 'fixed',
-                top: '60px',
-                bottom: '80px',
+                top: '56px',
+                bottom: '76px',
                 left: 0,
-                width: '18%',
-                zIndex: 50,
-                cursor: 'w-resize',
-                opacity: 0
+                width: '28%',
+                zIndex: 40,
+                cursor: 'w-resize'
+              }}
+            />
+            <div
+              onClick={() => setShowHUD((prev) => !prev)}
+              data-tooltip="点击切换控制栏显隐"
+              data-tooltip-pos="top"
+              style={{
+                position: 'fixed',
+                top: '56px',
+                bottom: '76px',
+                left: '28%',
+                width: '44%',
+                zIndex: 40,
+                cursor: 'pointer'
               }}
             />
             <div
@@ -711,18 +752,24 @@ export const MainReader: React.FC<MainReaderProps> = ({
               data-tooltip-pos="left"
               style={{
                 position: 'fixed',
-                top: '60px',
-                bottom: '80px',
+                top: '56px',
+                bottom: '76px',
                 right: 0,
-                width: '18%',
-                zIndex: 50,
-                cursor: 'e-resize',
-                opacity: 0
+                width: '28%',
+                zIndex: 40,
+                cursor: 'e-resize'
               }}
             />
 
-            {/* Current Page Content Paragraphs */}
-            <div>
+            {/* Current Page Content Paragraphs with Single/Double Column */}
+            <div
+              style={{
+                columnCount: isDoubleCol ? 2 : 1,
+                columnGap: isDoubleCol ? '52px' : 'normal',
+                columnRule: isDoubleCol ? '1px solid var(--glass-border)' : 'none',
+                textAlign: 'justify'
+              }}
+            >
               {(pages[currentPage] || []).map((para, idx) => {
                 if (searchQuery.trim().length > 0) {
                   const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
@@ -785,7 +832,8 @@ export const MainReader: React.FC<MainReaderProps> = ({
                 justifyContent: 'space-between',
                 fontSize: '12px',
                 color: 'var(--text-muted)',
-                userSelect: 'none'
+                userSelect: 'none',
+                zIndex: 50
               }}
             >
               <button
@@ -814,8 +862,19 @@ export const MainReader: React.FC<MainReaderProps> = ({
             </div>
           </div>
         ) : (
-          /* 3. Continuous Vertical Scroll Mode */
-          <div key={currentChapter.index} className="animate-chapter-fade" style={{ maxWidth: '860px', margin: '0 auto' }}>
+          /* 3. Continuous Vertical Scroll Mode with Single/Double Column support */
+          <div
+            key={currentChapter.index}
+            className="animate-chapter-fade"
+            style={{
+              maxWidth: isDoubleCol ? '1240px' : '860px',
+              margin: '0 auto',
+              columnCount: isDoubleCol ? 2 : 1,
+              columnGap: isDoubleCol ? '52px' : 'normal',
+              columnRule: isDoubleCol ? '1px solid var(--glass-border)' : 'none',
+              textAlign: 'justify'
+            }}
+          >
             {paragraphs.map((para, idx) => {
               if (searchQuery.trim().length > 0) {
                 const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');

@@ -503,6 +503,41 @@ body, html {
   backface-visibility: hidden;
 }
 
+/* Page Turn Slide Animations */
+@keyframes pageSlideNext {
+  0% {
+    opacity: 0.15;
+    transform: translate3d(36px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pageSlidePrev {
+  0% {
+    opacity: 0.15;
+    transform: translate3d(-36px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.page-anim-next {
+  animation: pageSlideNext 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+}
+
+.page-anim-prev {
+  animation: pageSlidePrev 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+}
+
 /* Custom Sleek Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;

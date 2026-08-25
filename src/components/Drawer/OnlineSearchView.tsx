@@ -170,25 +170,41 @@ export const OnlineSearchView: React.FC<OnlineSearchViewProps> = ({
                 border: '1px solid var(--glass-border)'
               }}
             >
-              {/* Cover */}
+              {/* Cover with no-referrer bypass and stylish gradient fallback */}
               <div
                 style={{
-                  width: '52px',
-                  height: '70px',
-                  borderRadius: '6px',
-                  background: item.cover
-                    ? `url(${item.cover}) center/cover`
-                    : 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                  width: '54px',
+                  height: '74px',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(139, 92, 246, 0.8) 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#ffffff',
-                  fontWeight: 600,
-                  fontSize: '16px',
-                  flexShrink: 0
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                  border: '1px solid var(--glass-border)'
                 }}
               >
-                {!item.cover && item.title.slice(0, 1)}
+                {item.cover && (
+                  <img
+                    src={item.cover}
+                    alt={item.title}
+                    referrerPolicy="no-referrer"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                    }}
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 1 }}
+                  />
+                )}
+                <span style={{ zIndex: 0, textAlign: 'center', padding: '4px', lineHeight: 1.2, wordBreak: 'break-all' }}>
+                  {item.title.slice(0, 4)}
+                </span>
               </div>
 
               {/* Info */}

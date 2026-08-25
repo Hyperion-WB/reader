@@ -180,11 +180,13 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
 
   return (
     <div
-      className="smooth-scroll"
+      className="smooth-scroll tauri-no-drag"
       style={{
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
+        height: '100%',
+        maxHeight: '100%',
         minHeight: 0,
         overflowY: 'auto',
         overflowX: 'hidden',

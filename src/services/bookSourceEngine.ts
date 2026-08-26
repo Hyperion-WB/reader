@@ -201,6 +201,15 @@ export class BookSourceEngine {
 
         let targetUrl = rawSearchRule;
 
+        // Helper to replace keyword placeholders
+        const replaceKeyword = (str: string, kw: string, encode = true) => {
+          const val = encode ? encodeURIComponent(kw) : kw;
+          return str
+            .replace(/\{\{\s*(?:key|keyword|searchKey|searchkey|search_key|name|title|kw|wd|q)\s*\}\}/gi, val)
+            .replace(/\{\s*(?:key|keyword|searchKey|searchkey|search_key|name|title|kw|wd|q)\s*\}/gi, val)
+            .replace(/%s/g, val);
+        };
+
         // Parse Legado POST / JSON options format: url,{"method":"POST","body":...}
         if (targetUrl.includes(',{')) {
           const splitIdx = targetUrl.indexOf(',{');
@@ -213,13 +222,9 @@ export class BookSourceEngine {
             if (opts.headers) Object.assign(requestHeaders, opts.headers);
             if (opts.body) {
               if (typeof opts.body === 'string') {
-                requestBody = opts.body
-                  .replace(/\{\{\s*(?:key|keyword)\s*\}\}/gi, encodeURIComponent(cleanKeyword))
-                  .replace(/\{\s*(?:key|keyword)\s*\}/gi, encodeURIComponent(cleanKeyword));
+                requestBody = replaceKeyword(opts.body, cleanKeyword, true);
               } else {
-                requestBody = JSON.stringify(opts.body)
-                  .replace(/\{\{\s*(?:key|keyword)\s*\}\}/gi, cleanKeyword)
-                  .replace(/\{\s*(?:key|keyword)\s*\}/gi, cleanKeyword);
+                requestBody = replaceKeyword(JSON.stringify(opts.body), cleanKeyword, false);
               }
             }
           } catch {}
@@ -227,17 +232,12 @@ export class BookSourceEngine {
           const parts = targetUrl.split('@post->');
           targetUrl = parts[0].trim();
           method = 'POST';
-          requestBody = parts[1]
-            ?.trim()
-            .replace(/\{\{\s*(?:key|keyword)\s*\}\}/gi, encodeURIComponent(cleanKeyword))
-            .replace(/\{\s*(?:key|keyword)\s*\}/gi, encodeURIComponent(cleanKeyword));
+          requestBody = replaceKeyword(parts[1]?.trim() || '', cleanKeyword, true);
           requestHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
         }
 
         // Replace keyword placeholders in URL
-        targetUrl = targetUrl
-          .replace(/\{\{\s*(?:key|keyword)\s*\}\}/gi, encodeURIComponent(cleanKeyword))
-          .replace(/\{\s*(?:key|keyword)\s*\}/gi, encodeURIComponent(cleanKeyword));
+        targetUrl = replaceKeyword(targetUrl, cleanKeyword, true);
 
         // Resolve relative URL
         targetUrl = BookSourceEngine.resolveUrl(targetUrl, source.url);
@@ -384,6 +384,44 @@ export class BookSourceEngine {
           const parser = new DOMParser();
           const doc = parser.parseFromString(responseText, 'text/html');
 
+          // 1. Check if page is directly a redirected Book Detail Page (Common on Biquge/69shu for exact book matches)
+          const ogTitle =
+            doc.querySelector('meta[property="og:novel:book_name"], meta[property="og:title"], meta[name="og:title"]')?.getAttribute('content') ||
+            doc.querySelector('.info h1, h1.title, h1')?.textContent?.trim();
+          const ogAuthor =
+            doc.querySelector('meta[property="og:novel:author"], meta[property="og:author"], meta[name="og:author"]')?.getAttribute('content') ||
+            doc.querySelector('.info .author, .author')?.textContent?.trim();
+          const ogCover =
+            doc.querySelector('meta[property="og:image"], meta[name="og:image"]')?.getAttribute('content') ||
+            doc.querySelector('.cover img, .pic img, img#cover')?.getAttribute('src');
+          const ogIntro =
+            doc.querySelector('meta[property="og:description"], meta[name="description"]')?.getAttribute('content') ||
+            doc.querySelector('.intro, #intro, .content_desc')?.textContent?.trim();
+          const ogLatest =
+            doc.querySelector('meta[property="og:novel:latest_chapter_name"]')?.getAttribute('content') ||
+            doc.querySelector('.latest a, .new a, .update a')?.textContent?.trim();
+
+          if (ogTitle && (ogTitle.toLowerCase().includes(cleanKeyword.toLowerCase()) || cleanKeyword.toLowerCase().includes(ogTitle.toLowerCase()))) {
+            const fullCoverUrl = ogCover ? BookSourceEngine.resolveUrl(ogCover, targetUrl) : undefined;
+            const uniqueKey = `${ogTitle.toLowerCase()}-${(ogAuthor || '').toLowerCase()}`;
+            if (!seenTitles.has(uniqueKey)) {
+              seenTitles.add(uniqueKey);
+              const searchItem: SearchResultItem = {
+                title: ogTitle,
+                author: ogAuthor ? ogAuthor.replace(/^作\s*者[：:]\s*/, '') : '未知作者',
+                cover: fullCoverUrl,
+                intro: ogIntro ? ogIntro.replace(/\s+/g, ' ').slice(0, 160) : '暂无简介',
+                latestChapter: ogLatest || undefined,
+                detailUrl: targetUrl,
+                sourceId: source.id,
+                sourceName: source.name,
+                sourceUrl: source.url
+              };
+              sourceResults.push(searchItem);
+              aggregatedResults.push(searchItem);
+            }
+          }
+
           const bookListSelector =
             source.rule?.ruleSearch?.bookList ||
             '.bookbox, .search-list li, .novelslist2 li, .grid tr, .item, .book-item, table tr:not(:first-child), dl dd, .list-item, div.mybox';
@@ -430,15 +468,16 @@ export class BookSourceEngine {
             if (title && bookUrl) {
               const fullBookUrl = BookSourceEngine.resolveUrl(bookUrl, source.url);
               const fullCoverUrl = cover ? BookSourceEngine.resolveUrl(cover, source.url) : undefined;
-              const uniqueKey = `${title.toLowerCase()}-${(author || '').toLowerCase()}`;
+              const cleanAuthor = author ? author.replace(/^作\s*者[：:]\s*/, '').trim() : '未知作者';
+              const uniqueKey = `${title.toLowerCase()}-${cleanAuthor.toLowerCase()}`;
 
               if (!seenTitles.has(uniqueKey)) {
                 seenTitles.add(uniqueKey);
                 const searchItem: SearchResultItem = {
                   title,
-                  author: author || '未知作者',
+                  author: cleanAuthor,
                   cover: fullCoverUrl,
-                  intro: intro || '暂无简介',
+                  intro: intro ? intro.replace(/\s+/g, ' ').slice(0, 160) : '暂无简介',
                   latestChapter: latestChapter || undefined,
                   detailUrl: fullBookUrl,
                   sourceId: source.id,

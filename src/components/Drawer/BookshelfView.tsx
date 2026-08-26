@@ -45,9 +45,9 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', gap: '10px', padding: '2px 0' }}>
+    <div className="tauri-no-drag" style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0px', minHeight: 0, overflow: 'hidden', gap: '10px', padding: '2px 0' }}>
       {/* Top Action Bar */}
-      <div style={{ display: 'flex', gap: '8px', padding: '2px 0' }}>
+      <div style={{ display: 'flex', gap: '8px', padding: '2px 0', flexShrink: 0 }}>
         <button
           onClick={onImportLocal}
           className="frosted-btn frosted-btn-primary"
@@ -67,7 +67,7 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
       </div>
 
       {/* Search & Layout View Mode Switcher */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '2px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '2px 0', flexShrink: 0 }}>
         <div style={{ position: 'relative', flex: 1 }}>
           <Search
             size={13}
@@ -147,9 +147,9 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({
 
       {/* Book List / Grid / Minimal */}
       <div
-        className="smooth-scroll"
+        className="smooth-scroll tauri-no-drag"
         style={{
-          flex: 1,
+          flex: '1 1 0px',
           minHeight: 0,
           overflowY: 'auto',
           overflowX: 'hidden',

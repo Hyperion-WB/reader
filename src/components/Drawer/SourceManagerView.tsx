@@ -249,7 +249,7 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
   };
 
   return (
-    <div className="tauri-no-drag" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden', gap: '8px' }}>
+    <div className="tauri-no-drag" style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0px', minHeight: 0, overflow: 'hidden', gap: '8px' }}>
       {/* Search & Import Header */}
       <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
         <div style={{ position: 'relative', flex: 1 }}>
@@ -396,10 +396,8 @@ export const SourceManagerView: React.FC<SourceManagerViewProps> = ({
       <div
         className="smooth-scroll tauri-no-drag"
         style={{
-          flex: 1,
-          height: '100%',
+          flex: '1 1 0px',
           minHeight: 0,
-          maxHeight: '100%',
           overflowY: 'auto',
           overflowX: 'hidden',
           display: 'flex',

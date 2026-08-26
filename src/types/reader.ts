@@ -127,7 +127,7 @@ export interface ThemeConfig {
   textColor: string;
   backgroundColor: string;
   glassBorder: boolean;
-  pageMode: 'paginated' | 'scroll';
+  pageMode: 'paginated' | 'scroll' | 'infinite';
   columns?: 'single' | 'double' | 'auto';
   pageTurnAnimation?: 'slide' | '3d-flip' | 'fade';
   comicFlowMode?: 'stream' | 'rtl' | 'ltr';

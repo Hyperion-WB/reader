@@ -108,9 +108,9 @@ export const TocView: React.FC<TocViewProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', gap: '10px' }}>
+    <div className="tauri-no-drag" style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0px', minHeight: 0, overflow: 'hidden', gap: '10px' }}>
       {/* Search & Actions Header */}
-      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
         <div style={{ position: 'relative', flex: 1 }}>
           <Search
             size={13}
@@ -215,9 +215,7 @@ export const TocView: React.FC<TocViewProps> = ({
         onScroll={handleScroll}
         className="smooth-scroll tauri-no-drag"
         style={{
-          flex: 1,
-          height: '100%',
-          maxHeight: '100%',
+          flex: '1 1 0px',
           minHeight: 0,
           overflowY: 'auto',
           overflowX: 'hidden',

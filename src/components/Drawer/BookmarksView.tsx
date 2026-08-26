@@ -43,8 +43,8 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', gap: '10px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px' }}>
+    <div className="tauri-no-drag" style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0px', minHeight: 0, overflow: 'hidden', gap: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px', flexShrink: 0 }}>
         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <BookmarkIcon size={14} style={{ color: 'var(--accent-color)' }} />
           <span>本书书签 ({currentBookBookmarks.length})</span>
@@ -66,9 +66,7 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
       <div
         className="smooth-scroll tauri-no-drag"
         style={{
-          flex: 1,
-          height: '100%',
-          maxHeight: '100%',
+          flex: '1 1 0px',
           minHeight: 0,
           overflowY: 'auto',
           overflowX: 'hidden',

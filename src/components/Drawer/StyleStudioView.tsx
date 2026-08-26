@@ -14,7 +14,8 @@ import {
   Upload,
   Trash2,
   Palette,
-  AlignJustify
+  AlignJustify,
+  Sparkles
 } from 'lucide-react';
 import { FrostedSelect } from '../FrostedSelect';
 
@@ -184,9 +185,7 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        flex: 1,
-        height: '100%',
-        maxHeight: '100%',
+        flex: '1 1 0px',
         minHeight: 0,
         overflowY: 'auto',
         overflowX: 'hidden',
@@ -204,47 +203,66 @@ export const StyleStudioView: React.FC<StyleStudioViewProps> = ({
             <span>小说阅读模式</span>
           </div>
           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-            {themeConfig.pageMode === 'paginated' ? '左右翻页模式' : '连续下拉滚动'}
+            {themeConfig.pageMode === 'paginated' ? '左右分页翻页' : themeConfig.pageMode === 'infinite' ? '无极连续滑动' : '单章上下滚动'}
           </span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-          <button
-            onClick={() => onUpdateTheme({ ...themeConfig, pageMode: 'scroll' })}
-            className="frosted-btn"
-            style={{
-              padding: '8px 10px',
-              borderRadius: '12px',
-              background: themeConfig.pageMode !== 'paginated' ? 'var(--accent-color)' : 'var(--glass-surface)',
-              color: themeConfig.pageMode !== 'paginated' ? '#ffffff' : 'var(--text-primary)',
-              fontWeight: 600,
-              fontSize: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px'
-            }}
-          >
-            <AlignJustify size={14} />
-            <span>连续滚动</span>
-          </button>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
           <button
             onClick={() => onUpdateTheme({ ...themeConfig, pageMode: 'paginated' })}
             className="frosted-btn"
             style={{
-              padding: '8px 10px',
-              borderRadius: '12px',
+              padding: '7px 4px',
+              borderRadius: '10px',
               background: themeConfig.pageMode === 'paginated' ? 'var(--accent-color)' : 'var(--glass-surface)',
               color: themeConfig.pageMode === 'paginated' ? '#ffffff' : 'var(--text-primary)',
               fontWeight: 600,
-              fontSize: '12px',
+              fontSize: '11px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '6px'
+              gap: '4px'
             }}
           >
-            <BookOpen size={14} />
+            <BookOpen size={13} />
             <span>左右翻页</span>
+          </button>
+          <button
+            onClick={() => onUpdateTheme({ ...themeConfig, pageMode: 'scroll' })}
+            className="frosted-btn"
+            style={{
+              padding: '7px 4px',
+              borderRadius: '10px',
+              background: themeConfig.pageMode === 'scroll' ? 'var(--accent-color)' : 'var(--glass-surface)',
+              color: themeConfig.pageMode === 'scroll' ? '#ffffff' : 'var(--text-primary)',
+              fontWeight: 600,
+              fontSize: '11px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px'
+            }}
+          >
+            <AlignJustify size={13} />
+            <span>单章滚动</span>
+          </button>
+          <button
+            onClick={() => onUpdateTheme({ ...themeConfig, pageMode: 'infinite' })}
+            className="frosted-btn"
+            style={{
+              padding: '7px 4px',
+              borderRadius: '10px',
+              background: themeConfig.pageMode === 'infinite' ? 'var(--accent-color)' : 'var(--glass-surface)',
+              color: themeConfig.pageMode === 'infinite' ? '#ffffff' : 'var(--text-primary)',
+              fontWeight: 600,
+              fontSize: '11px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px'
+            }}
+          >
+            <Sparkles size={13} />
+            <span>无极滑动</span>
           </button>
         </div>
 

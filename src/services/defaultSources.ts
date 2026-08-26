@@ -3,7 +3,7 @@ import { BookSource } from '../types/reader';
 export const DEFAULT_BOOK_SOURCES: BookSource[] = [
   {
     id: 'source-69shu',
-    name: '69书吧 (优质推荐)',
+    name: '69书吧 (推荐聚合)',
     url: 'https://www.69shuba.com',
     enabled: true,
     weight: 100,
@@ -26,6 +26,32 @@ export const DEFAULT_BOOK_SOURCES: BookSource[] = [
       },
       ruleContent: {
         content: '#content, .txtnav, #chaptercontent@text'
+      }
+    }
+  },
+  {
+    id: 'source-biquge-la',
+    name: '新笔趣阁 (经典全本)',
+    url: 'https://www.xbiquge.la',
+    enabled: true,
+    weight: 95,
+    type: 'legado',
+    rule: {
+      searchUrl: 'https://www.xbiquge.la/modules/article/waps.php?searchkey={{key}}',
+      ruleSearch: {
+        bookList: 'table.grid tr:not(:first-child), .novelslist2 ul li',
+        name: 'td:nth-child(1) a, .s2 a@text',
+        author: 'td:nth-child(3), .s4@text',
+        bookUrl: 'td:nth-child(1) a, .s2 a@href',
+        latestChapter: 'td:nth-child(2) a, .s3 a@text'
+      },
+      ruleToc: {
+        chapterList: '#list dd a, .listmain dl dd a',
+        chapterName: 'text',
+        chapterUrl: 'href'
+      },
+      ruleContent: {
+        content: '#content, #htmlContent@text'
       }
     }
   },
@@ -56,8 +82,36 @@ export const DEFAULT_BOOK_SOURCES: BookSource[] = [
     }
   },
   {
+    id: 'source-biqulu',
+    name: '笔趣阁源2 (高速)',
+    url: 'https://www.biqulu.com',
+    enabled: true,
+    weight: 88,
+    type: 'legado',
+    rule: {
+      searchUrl: 'https://www.biqulu.com/search.php?keyword={{key}}',
+      ruleSearch: {
+        bookList: '.result-item, .search-list .item, .bookbox',
+        name: 'h3 a, .title a, a.name@text',
+        author: '.author, span:nth-child(2)@text',
+        intro: '.intro, p.desc@text',
+        coverUrl: 'img@src',
+        bookUrl: 'h3 a, .title a, a.name@href',
+        latestChapter: '.latest a, .update a@text'
+      },
+      ruleToc: {
+        chapterList: '#list dd a, .catalog ul li a',
+        chapterName: 'text',
+        chapterUrl: 'href'
+      },
+      ruleContent: {
+        content: '#content, #chaptercontent@text'
+      }
+    }
+  },
+  {
     id: 'source-shucheng',
-    name: '飘天文学 (轻小说/网文)',
+    name: '飘天文学 (网文大全)',
     url: 'https://www.ptwxz.com',
     enabled: true,
     weight: 85,
@@ -108,3 +162,4 @@ export const DEFAULT_BOOK_SOURCES: BookSource[] = [
     }
   }
 ];
+

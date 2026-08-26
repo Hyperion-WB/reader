@@ -180,9 +180,7 @@ export const StealthConsoleView: React.FC<StealthConsoleViewProps> = ({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        flex: 1,
-        height: '100%',
-        maxHeight: '100%',
+        flex: '1 1 0px',
         minHeight: 0,
         overflowY: 'auto',
         overflowX: 'hidden',

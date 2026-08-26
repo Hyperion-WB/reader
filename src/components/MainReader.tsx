@@ -191,18 +191,25 @@ export const MainReader: React.FC<MainReaderProps> = ({
   const wordCount = currentChapterContent ? currentChapterContent.replace(/\s+/g, '').length : 0;
 
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  const [viewportHeight, setViewportHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
+  const lastWheelTimeRef = React.useRef<number>(0);
 
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      setViewportHeight(window.innerHeight);
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const isDoubleCol = themeConfig.columns === 'double' || (themeConfig.columns === 'auto' && windowWidth >= 1024);
 
-  // Pagination Engine for Paginated Mode
-  const baseChars = Math.max(280, Math.floor(680 * (16 / Math.max(12, themeConfig.fontSize))));
-  const charsPerPage = isDoubleCol ? baseChars * 2 : baseChars;
+  // Exact Viewport-based Page Slicing Formula (100% fits on 1 screen, never scrolls vertically!)
+  const pageLines = Math.max(6, Math.floor((viewportHeight - 160) / (themeConfig.fontSize * themeConfig.lineHeight + (themeConfig.paragraphSpacing * 0.6))));
+  const singleColWidth = isDoubleCol ? (Math.min(windowWidth, 1240) - 100) / 2 : Math.min(windowWidth - 60, 860);
+  const charsPerLine = Math.max(14, Math.floor(singleColWidth / (themeConfig.fontSize * 1.05)));
+  const charsPerPage = isDoubleCol ? pageLines * charsPerLine * 2 : pageLines * charsPerLine;
 
   const pages: string[][] = React.useMemo(() => {
     if (paragraphs.length === 0) return [['(本章暂无内容)']];
@@ -269,6 +276,21 @@ export const MainReader: React.FC<MainReaderProps> = ({
       }
     }
   }, [currentPage, pages.length, book.currentChapterIndex, onPrevChapter, onUpdateBookProgress]);
+
+  // Handle Mouse Wheel in Paginated Mode to Flip Pages Instantly
+  const handleWheelOnReader = (e: React.WheelEvent) => {
+    if (themeConfig.pageMode !== 'paginated') return;
+    const now = Date.now();
+    if (now - lastWheelTimeRef.current > 200) {
+      if (e.deltaY > 20) {
+        handleNextPage();
+        lastWheelTimeRef.current = now;
+      } else if (e.deltaY < -20) {
+        handlePrevPage();
+        lastWheelTimeRef.current = now;
+      }
+    }
+  };
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -522,19 +544,24 @@ export const MainReader: React.FC<MainReaderProps> = ({
         onPrevMatch={() => setMatchIndex((prev) => (prev - 1 + totalSearchMatches) % Math.max(1, totalSearchMatches))}
       />
 
-      {/* Scrollable Reading Content Area */}
+      {/* Reading Viewport Area (Zero-Scroll in Paginated Mode, Smooth-Scroll in Scroll Mode) */}
       <div
         ref={containerRef}
-        onScroll={handleScroll}
+        onScroll={themeConfig.pageMode !== 'paginated' ? handleScroll : undefined}
+        onWheel={themeConfig.pageMode === 'paginated' ? handleWheelOnReader : undefined}
         onMouseUp={handleMouseUp}
-        className="smooth-scroll reader-scroll-viewport"
+        className={themeConfig.pageMode === 'paginated' ? 'reader-scroll-viewport' : 'smooth-scroll reader-scroll-viewport'}
         style={{
           position: 'relative',
           zIndex: 1,
           width: '100%',
           height: '100%',
-          overflowY: 'auto',
-          padding: '24px clamp(14px, 4vw, 36px) 140px clamp(14px, 4vw, 36px)',
+          overflowY: themeConfig.pageMode === 'paginated' ? 'hidden' : 'auto',
+          overflowX: 'hidden',
+          padding:
+            themeConfig.pageMode === 'paginated'
+              ? '16px clamp(14px, 3.5vw, 36px) 14px clamp(14px, 3.5vw, 36px)'
+              : '24px clamp(14px, 4vw, 36px) 140px clamp(14px, 4vw, 36px)',
           boxSizing: 'border-box',
           fontFamily: themeConfig.fontFamily,
           fontSize: `${themeConfig.fontSize}px`,
@@ -542,25 +569,26 @@ export const MainReader: React.FC<MainReaderProps> = ({
           letterSpacing: `${themeConfig.letterSpacing}px`,
           color: readingBg.color || 'var(--text-primary)',
           transform: 'translateZ(0)',
-          willChange: 'scroll-position',
           contain: 'paint layout'
         }}
       >
-        {/* Chapter Title */}
-        <div
-          style={{
-            fontWeight: 700,
-            fontSize: `${themeConfig.fontSize + 8}px`,
-            marginBottom: '24px',
-            color: 'var(--text-primary)',
-            textAlign: 'center',
-            borderBottom: '1px solid var(--glass-border)',
-            paddingBottom: '14px',
-            letterSpacing: '-0.3px'
-          }}
-        >
-          {currentChapter.title}
-        </div>
+        {/* Chapter Title (Only displayed in Vertical Scroll Mode) */}
+        {themeConfig.pageMode !== 'paginated' && (
+          <div
+            style={{
+              fontWeight: 700,
+              fontSize: `${themeConfig.fontSize + 8}px`,
+              marginBottom: '24px',
+              color: 'var(--text-primary)',
+              textAlign: 'center',
+              borderBottom: '1px solid var(--glass-border)',
+              paddingBottom: '14px',
+              letterSpacing: '-0.3px'
+            }}
+          >
+            {currentChapter.title}
+          </div>
+        )}
 
         {/* Comic / Manga Rendering Canvas with Flow & Filter Controls */}
         {(book.isComic || currentChapter.isComic || (currentChapter.comicImages && currentChapter.comicImages.length > 0)) ? (
@@ -702,30 +730,32 @@ export const MainReader: React.FC<MainReaderProps> = ({
             <div style={{ fontSize: '13px' }}>正在为您加载章节内容...</div>
           </div>
         ) : themeConfig.pageMode === 'paginated' ? (
-          /* 2. Paginated Flip View Mode with Real Turn Animation and Dual Column support */
+          /* 2. True Paginated Mode (Zero Vertical Scroll, Pure Screen-Sized Page Turn) */
           <div
             key={`page-${book.currentChapterIndex}-${currentPage}`}
             className={pageTurnDir === 'next' ? 'page-anim-next' : pageTurnDir === 'prev' ? 'page-anim-prev' : 'animate-chapter-fade'}
             style={{
               maxWidth: isDoubleCol ? '1240px' : '860px',
               width: '100%',
+              height: '100%',
               margin: '0 auto',
-              minHeight: 'calc(100% - 60px)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              position: 'relative'
+              position: 'relative',
+              overflow: 'hidden',
+              userSelect: 'none'
             }}
           >
             {/* Clickable Paging Hotspots: Left 28% (Prev), Center 44% (Toggle HUD), Right 28% (Next) */}
             <div
               onClick={handlePrevPage}
-              data-tooltip="上一页 (A / ←)"
+              data-tooltip="上一页 (A / ← / 滚轮向上)"
               data-tooltip-pos="right"
               style={{
-                position: 'fixed',
-                top: '56px',
-                bottom: '76px',
+                position: 'absolute',
+                top: 0,
+                bottom: '36px',
                 left: 0,
                 width: '28%',
                 zIndex: 40,
@@ -737,9 +767,9 @@ export const MainReader: React.FC<MainReaderProps> = ({
               data-tooltip="点击切换控制栏显隐"
               data-tooltip-pos="top"
               style={{
-                position: 'fixed',
-                top: '56px',
-                bottom: '76px',
+                position: 'absolute',
+                top: 0,
+                bottom: '36px',
                 left: '28%',
                 width: '44%',
                 zIndex: 40,
@@ -748,12 +778,12 @@ export const MainReader: React.FC<MainReaderProps> = ({
             />
             <div
               onClick={handleNextPage}
-              data-tooltip="下一页 (D / → / 空格)"
+              data-tooltip="下一页 (D / → / 空格 / 滚轮向下)"
               data-tooltip-pos="left"
               style={{
-                position: 'fixed',
-                top: '56px',
-                bottom: '76px',
+                position: 'absolute',
+                top: 0,
+                bottom: '36px',
                 right: 0,
                 width: '28%',
                 zIndex: 40,
@@ -761,9 +791,34 @@ export const MainReader: React.FC<MainReaderProps> = ({
               }}
             />
 
-            {/* Current Page Content Paragraphs with Single/Double Column */}
+            {/* Top Page Header (Apple Books Style) */}
             <div
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+                marginBottom: '10px',
+                paddingBottom: '6px',
+                borderBottom: '1px solid var(--glass-border)',
+                flexShrink: 0
+              }}
+            >
+              <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
+                {book.title} · {currentChapter.title}
+              </span>
+              <span>
+                第 {currentPage + 1} / {pages.length} 页
+              </span>
+            </div>
+
+            {/* Current Page Content Paragraphs (Strictly constrained within remaining height) */}
+            <div
+              style={{
+                flex: '1 1 0px',
+                minHeight: 0,
+                overflow: 'hidden',
                 columnCount: isDoubleCol ? 2 : 1,
                 columnGap: isDoubleCol ? '52px' : 'normal',
                 columnRule: isDoubleCol ? '1px solid var(--glass-border)' : 'none',
@@ -824,22 +879,22 @@ export const MainReader: React.FC<MainReaderProps> = ({
             <div
               className="tauri-no-drag"
               style={{
-                marginTop: '36px',
-                paddingTop: '16px',
+                paddingTop: '8px',
                 borderTop: '1px solid var(--glass-border)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                fontSize: '12px',
+                fontSize: '11.5px',
                 color: 'var(--text-muted)',
                 userSelect: 'none',
+                flexShrink: 0,
                 zIndex: 50
               }}
             >
               <button
                 onClick={handlePrevPage}
                 className="frosted-btn"
-                style={{ padding: '5px 12px', borderRadius: '9999px', fontSize: '11.5px' }}
+                style={{ padding: '3px 10px', borderRadius: '9999px', fontSize: '11px' }}
               >
                 <span>‹ 上一页</span>
               </button>
@@ -855,7 +910,7 @@ export const MainReader: React.FC<MainReaderProps> = ({
               <button
                 onClick={handleNextPage}
                 className="frosted-btn"
-                style={{ padding: '5px 12px', borderRadius: '9999px', fontSize: '11.5px' }}
+                style={{ padding: '3px 10px', borderRadius: '9999px', fontSize: '11px' }}
               >
                 <span>下一页 ›</span>
               </button>

@@ -14,7 +14,8 @@ import {
   Bookmark,
   Shuffle,
   Columns,
-  DownloadCloud
+  DownloadCloud,
+  Sparkles
 } from 'lucide-react';
 import { ThemeConfig } from '../types/reader';
 
@@ -96,9 +97,12 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
           display: 'flex',
           flexDirection: isNarrowScreen ? 'column' : 'row',
           alignItems: 'center',
-          gap: isNarrowScreen ? '6px' : 'clamp(3px, 1vw, 7px)',
-          padding: isNarrowScreen ? '8px 14px' : '6px clamp(8px, 1.2vw, 14px)',
+          gap: isNarrowScreen ? '6px' : 'clamp(2px, 0.8vw, 6px)',
+          padding: isNarrowScreen ? '8px 12px' : '5px clamp(6px, 1vw, 12px)',
           maxWidth: 'calc(100vw - 28px)',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          scrollbarWidth: 'none',
           borderRadius: isNarrowScreen ? '20px' : '9999px',
           boxShadow: isVisible
             ? '0 18px 48px rgba(0, 0, 0, 0.44), 0 2px 10px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25)'
@@ -229,12 +233,17 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
             </span>
           )}
 
-          {/* Reading Mode Switcher Button (Scroll vs Page) */}
+          {/* Reading Mode Switcher Button (Paginated vs Scroll vs Infinite) */}
           <button
             onClick={() =>
               onUpdateTheme({
                 ...themeConfig,
-                pageMode: themeConfig.pageMode === 'paginated' ? 'scroll' : 'paginated'
+                pageMode:
+                  themeConfig.pageMode === 'paginated'
+                    ? 'scroll'
+                    : themeConfig.pageMode === 'scroll'
+                    ? 'infinite'
+                    : 'paginated'
               })
             }
             className="frosted-btn"
@@ -245,11 +254,23 @@ export const HUDControls: React.FC<HUDControlsProps> = ({
               gap: '4px',
               flexShrink: 0
             }}
-            data-tooltip={themeConfig.pageMode === 'paginated' ? '当前：单页翻页（点击切为连续滚动）' : '当前：连续滚动（点击切为单页翻页）'}
+            data-tooltip={
+              themeConfig.pageMode === 'paginated'
+                ? '当前：左右分页翻页（点击切为单章滚动）'
+                : themeConfig.pageMode === 'scroll'
+                ? '当前：单章上下滚动（点击切为无极滑动）'
+                : '当前：无极连续滑动（点击切为左右分页）'
+            }
             data-tooltip-pos="top"
           >
-            {themeConfig.pageMode === 'paginated' ? <BookOpen size={12} style={{ color: 'var(--accent-color)' }} /> : <AlignJustify size={12} style={{ color: 'var(--accent-color)' }} />}
-            <span>{themeConfig.pageMode === 'paginated' ? '翻页' : '滚动'}</span>
+            {themeConfig.pageMode === 'paginated' ? (
+              <BookOpen size={12} style={{ color: 'var(--accent-color)' }} />
+            ) : themeConfig.pageMode === 'infinite' ? (
+              <Sparkles size={12} style={{ color: 'var(--accent-color)' }} />
+            ) : (
+              <AlignJustify size={12} style={{ color: 'var(--accent-color)' }} />
+            )}
+            <span>{themeConfig.pageMode === 'paginated' ? '翻页' : themeConfig.pageMode === 'infinite' ? '无极' : '滚动'}</span>
           </button>
 
           {/* Dual / Auto Column Toggle */}
